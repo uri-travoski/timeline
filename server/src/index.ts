@@ -11,6 +11,7 @@ import { config } from './config.ts';
 import { migrate } from './db.ts';
 import { authenticate, enforceScopes, type AppEnv } from './lib/auth.ts';
 import { content } from './routes/content.ts';
+import { appUpdate } from './routes/appupdate.ts';
 import { account, ensureAdmin, publicRoutes } from './routes/account.ts';
 import { media } from './routes/media.ts';
 import { handleMcp } from './mcp.ts';
@@ -38,6 +39,7 @@ api.use('*', cors({ origin: (o) => o, credentials: true, allowHeaders: ['Authori
 api.route('/', publicRoutes);
 api.use('*', authenticate, enforceScopes);
 api.route('/', content);
+api.route('/', appUpdate);
 api.route('/', account);
 
 api.openAPIRegistry.registerComponent('securitySchemes', 'bearer', { type: 'http', scheme: 'bearer', description: 'API key (tlk_...) or session token' });
@@ -47,7 +49,7 @@ app.get('/api/openapi.json', (c) =>
       openapi: '3.1.0',
       info: {
         title: 'Timeline API',
-        version: '1.2.0',
+        version: '1.3.0',
         description:
           'Self-hosted timeline. Create an AI agent under Settings → AI agents to get an API key, then send it as `Authorization: Bearer tlk_...`. ' +
           'Upload files with `PUT /api/uploads?filename=x.mp4` (raw body), then reference the returned id in `attachmentIds` when creating a post. ' +

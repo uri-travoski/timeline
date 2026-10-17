@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <clipPath id="icon">
+      <rect width="1024" height="1024" rx="180" ry="180"/>
+    </clipPath>
+    <g id="entry">
+      <!-- gap ring around the node -->
+      <circle cx="365" cy="0" r="66" fill="#000"/>
+      <!-- node -->
+      <circle cx="365" cy="0" r="49" fill="#fff"/>
+      <!-- speech-bubble card -->
+      <path d="M445 0 L486 -24 L486 -71 L707 -71 L707 71 L486 71 L486 24 Z" fill="#fff"/>
+      <!-- text lines -->
+      <rect x="532" y="-41" width="141" height="27" fill="#000"/>
+      <rect x="532" y="14" width="105" height="28" fill="#000"/>
+    </g>
+  </defs>
+  <g clip-path="url(#icon)">
+    <rect width="1024" height="1024" fill="#000"/>
+    <!-- timeline bar, top edge to bottom edge -->
+    <rect x="342" y="0" width="46" height="1024" fill="#fff"/>
+    <use href="#entry" y="160"/>
+    <use href="#entry" y="512"/>
+    <use href="#entry" y="864"/>
+  </g>
+</svg>

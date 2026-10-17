@@ -148,6 +148,8 @@ New agent keys get read, write and delete, so an agent can never permanently des
 
 ## Android app
 
+**Updates:** the app checks for a new version when it starts, and Settings → App updates has a "Check for updates" button that downloads and installs it. The server does the GitHub lookup (`UPDATE_REPO`, plus `UPDATE_GITHUB_TOKEN` when the repo is private), so phones never need a GitHub login. New builds must be signed with the same key as the installed app or Android refuses the update: keep `mobile/android/app/debug.keystore` (or your release keystore) backed up.
+
 Prebuilt APK: `mobile/timeline-<version>.apk` (sideload it). **It is built for 64-bit ARM (arm64-v8a) only, i.e. modern phones from about 2017 onwards**; it will not install on older 32-bit phones or on x86 emulators (to build for those, add `armeabi-v7a` / `x86_64` to `buildArchs` in `mobile/app.config.ts`). On first start enter your server address
 (e.g. `http://192.168.8.101:8080` or `https://timeline.example.com`), email and password.
 

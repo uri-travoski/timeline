@@ -1,4 +1,6 @@
-import { Alert, Pressable, ScrollView, Switch, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Alert, Platform, Pressable, ScrollView, Switch, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Check, Cloud, Database, HardDrive } from 'lucide-react-native';
@@ -8,6 +10,7 @@ import { bytes, useMe } from '../src/state';
 import { THEMES, THEME_NAMES, useTheme } from '../src/theme';
 import { Screen } from '../src/components/Screen';
 import { Button, Card, Row, T } from '../src/components/ui';
+import { checkForUpdate, downloadAndInstall, installedVersion, type UpdateInfo } from '../src/updates';
 
 function Toggle({ label, hint, value, onChange }: { label: string; hint?: string; value: boolean; onChange: (v: boolean) => void }) {
   const t = useTheme();
@@ -22,7 +25,89 @@ function Toggle({ label, hint, value, onChange }: { label: string; hint?: string
   );
 }
 
+/** Bullet points of the release notes only (drops the download-link and install lines). */
+function releaseNotes(md: string) {
+  return md
+    .split('\n')
+    .filter((l) => l.trim().startsWith('- '))
+    .map((l) => '• ' + l.trim().slice(2).replace(/\*\*|`/g, ''))
+    .join('\n');
+}
+
+function UpdateCard({ autoInstall }: { autoInstall: boolean }) {
+  const t = useTheme();
+  const [info, setInfo] = useState<UpdateInfo | null>(null);
+  const [busy, setBusy] = useState<'check' | 'download' | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [error, setError] = useState('');
+  const started = useRef(false);
+
+  const check = async (refresh: boolean) => {
+    setBusy('check');
+    setError('');
+    try {
+      const u = await checkForUpdate(refresh);
+      setInfo(u);
+      return u;
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+  const install = async (u: UpdateInfo) => {
+    setBusy('download');
+    setError('');
+    setProgress(0);
+    try {
+      await downloadAndInstall(u, setProgress);
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    check(autoInstall).then((u) => {
+      if (autoInstall && u?.updateAvailable) void install(u);
+    });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const mb = info?.size ? ` · ${(info.size / 1048576).toFixed(0)} MB` : '';
+  return (
+    <Card>
+      <T bold size={16} style={{ marginBottom: 2 }}>App updates</T>
+      <T muted size={12.5}>Installed version {installedVersion()}</T>
+      {info && !info.configured && <T muted size={13} style={{ marginTop: 8 }}>Updates aren't set up on your server (admin: set UPDATE_REPO, see the README).</T>}
+      {info?.configured && info.error && <T style={{ marginTop: 8, color: t.danger }} size={13}>Couldn't check: {info.error}</T>}
+      {info?.configured && !info.error && !info.updateAvailable && <T style={{ marginTop: 8 }} size={14}>You're up to date.</T>}
+      {info?.updateAvailable && (
+        <View style={{ marginTop: 8 }}>
+          <T bold>Version {info.latest} is available{mb}</T>
+          {!!info.notes && <T muted size={12.5} numberOfLines={8} style={{ marginTop: 4 }}>{releaseNotes(info.notes)}</T>}
+        </View>
+      )}
+      {busy === 'download' && (
+        <View style={{ marginTop: 10 }}>
+          <View style={{ height: 6, backgroundColor: t.raised, borderRadius: 3, overflow: 'hidden' }}>
+            <View style={{ height: 6, width: `${Math.round(progress * 100)}%`, backgroundColor: t.accent }} />
+          </View>
+          <T muted size={12} style={{ marginTop: 4 }}>Downloading… {Math.round(progress * 100)}%</T>
+        </View>
+      )}
+      {!!error && <T style={{ marginTop: 8, color: t.danger }} size={13}>{error}</T>}
+      <Row gap={8} style={{ marginTop: 10 }}>
+        <Button title="Check for updates" loading={busy === 'check'} disabled={busy === 'download'} onPress={() => check(true)} style={{ flex: 1 }} />
+        {info?.updateAvailable && Platform.OS === 'android' && <Button title="Download & install" kind="primary" loading={busy === 'download'} onPress={() => install(info)} style={{ flex: 1 }} />}
+      </Row>
+    </Card>
+  );
+}
+
 export default function SettingsScreen() {
+  const { install } = useLocalSearchParams<{ install?: string }>();
   const t = useTheme();
   const qc = useQueryClient();
   const me = useMe().data;
@@ -152,6 +237,7 @@ export default function SettingsScreen() {
             ))}
           </Card>
         )}
+        {Platform.OS === 'android' && <UpdateCard autoInstall={install === '1'} />}
         <T muted size={12} style={{ textAlign: 'center' }}>Agents, API keys, categories and sharing are managed in the web app.</T>
       </ScrollView>
     </Screen>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, AppState, View } from 'react-native';
+import { ActivityIndicator, Alert, AppState, Platform, View } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as Notifications from 'expo-notifications';
@@ -7,6 +7,7 @@ import * as SystemUI from 'expo-system-ui';
 import { QueryClient, QueryClientProvider, focusManager, useQueryClient } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ApiError, api, session } from '../src/api';
+import { checkForUpdate } from '../src/updates';
 import { registerForPush } from '../src/push';
 import { FiltersProvider, useMe } from '../src/state';
 import { ThemeProvider, useTheme } from '../src/theme';
@@ -88,6 +89,21 @@ function AppStack() {
       sub2.remove();
     };
   }, [client]);
+
+  // Once per app start: offer a newer version if the server knows one. Failures stay silent.
+  useEffect(() => {
+    if (Platform.OS !== 'android') return;
+    checkForUpdate()
+      .then((u) => {
+        if (!u.updateAvailable) return;
+        const mb = u.size ? ` (${(u.size / 1048576).toFixed(0)} MB)` : '';
+        Alert.alert('Update available', `Timeline ${u.latest} is ready${mb}. You have ${u.current}.`, [
+          { text: 'Later', style: 'cancel' },
+          { text: 'Update now', onPress: () => router.push('/settings?install=1') },
+        ]);
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <>

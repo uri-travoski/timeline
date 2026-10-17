@@ -29,6 +29,8 @@ export const config = {
   mediaDir: path.join(dataDir, 'media'),
   localStorageDir: path.join(dataDir, 'files'),
   webDir: path.resolve(env.WEB_DIR ?? '../web/dist'),
+  // In-app Android updates: the newest GitHub Release of this repo is offered to the app (token needed only for private repos).
+  update: { repo: env.UPDATE_REPO ?? '', token: env.UPDATE_GITHUB_TOKEN ?? '', asset: env.UPDATE_ASSET ?? 'timeline.apk' },
   trashRetentionDays: Number(env.TRASH_RETENTION_DAYS ?? 30),
   maxUploadBytes: Number(env.MAX_UPLOAD_MB ?? 4096) * 1024 * 1024,
   google: {

@@ -26,7 +26,7 @@ function slim(p: any) {
 }
 
 function buildServer(user: AuthUser) {
-  const server = new McpServer({ name: 'timeline', version: '1.2.0' }, {
+  const server = new McpServer({ name: 'timeline', version: '1.3.0' }, {
     instructions:
       `You are connected to the Timeline of ${user.kind === 'agent' ? 'your owner' : user.name}. ` +
       'Posts you create appear on that timeline with your name and an "AI agent" badge, and notify the owner. ' +

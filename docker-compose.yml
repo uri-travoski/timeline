@@ -43,6 +43,10 @@ services:
 
       # --- tuning ---
       TRASH_RETENTION_DAYS: "30"
+      # In-app Android updates: the app asks this server, the server reads the newest GitHub Release.
+      # A private repo needs a GitHub token with read access to its contents (put it in .env, not in git).
+      UPDATE_REPO: ${UPDATE_REPO:-uri-travoski/timeline}
+      UPDATE_GITHUB_TOKEN: ${UPDATE_GITHUB_TOKEN:-}
       MEDIA_CONCURRENCY: "1"        # parallel video transcodes (raise on a bigger VPS)
       # HLS_HEIGHTS: "360,540,720,1080"
       # YTDLP_COOKIES_FILE: "/data/instagram-cookies.txt"   # some Instagram posts need a logged-in cookie file
