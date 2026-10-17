@@ -13,6 +13,7 @@
   --color-accent-soft: var(--accent-soft);
   --color-accent-text: var(--accent-text);
   --color-danger: #ef4444;
+  --color-gold: var(--gold);
   --font-sans: 'Inter', 'Noto Sans', ui-sans-serif, system-ui, sans-serif;
   /* Tight corner scale: the shape stays out of the way of the content. */
   --radius-sm: 4px;
@@ -25,6 +26,7 @@
 
 :root,
 [data-theme='light'] {
+  --gold: #d4a420; /* unread: posts, reminders, notifications */
   --bg: #f5f6fa;
   --panel: #ffffff;
   --card: #ffffff;

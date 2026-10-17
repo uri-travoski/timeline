@@ -57,7 +57,7 @@ export default function Reminders() {
         <div className="flex flex-col gap-2">
           {q.data.map((r) => (
             <div key={r.id} className={`flex items-center gap-3 rounded-2xl border border-line bg-card p-3.5 ${r.status !== 'scheduled' ? 'opacity-60' : ''}`}>
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-500/15 text-amber-500">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gold/15 text-gold">
                 <AlarmClock size={19} />
               </div>
               <button className="min-w-0 flex-1 text-left" onClick={() => setForm({ id: r.id, title: r.title, body: r.body, due: localInput(new Date(r.dueAt)), repeat: r.repeat ?? '' })}>

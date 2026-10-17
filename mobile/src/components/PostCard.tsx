@@ -5,7 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { AlarmClock, Check, Clapperboard, Download, FileText, Link2, Lock, MessageCircle, MoreHorizontal, Music, Play } from 'lucide-react-native';
 import { abs, api, type Attachment, type Post } from '../api';
 import { SOURCE_LABEL, bytes, markRead, setRead, timeAgo } from '../state';
-import { useTheme } from '../theme';
+import { GOLD, GOLD_TINT, useTheme } from '../theme';
 import { AgentBadge, Avatar, Row, T } from './ui';
 import { RemoteImage } from './RemoteImage';
 
@@ -36,14 +36,14 @@ function sourceLine(p: Post) {
 export function ReminderCard({ post }: { post: Post }) {
   const qc = useQueryClient();
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#f59e0b14', borderColor: '#f59e0b55', borderWidth: StyleSheet.hairlineWidth, borderLeftWidth: 3, borderLeftColor: '#f59e0b', borderRadius: 5, padding: 12 }}>
-      <View style={{ width: 38, height: 38, borderRadius: 5, backgroundColor: '#f59e0b33', alignItems: 'center', justifyContent: 'center' }}>
-        <AlarmClock size={19} color="#f59e0b" />
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#d4a42014', borderColor: '#d4a42055', borderWidth: StyleSheet.hairlineWidth, borderLeftWidth: 3, borderLeftColor: '#d4a420', borderRadius: 5, padding: 12 }}>
+      <View style={{ width: 38, height: 38, borderRadius: 5, backgroundColor: '#d4a42033', alignItems: 'center', justifyContent: 'center' }}>
+        <AlarmClock size={19} color="#d4a420" />
       </View>
       <Pressable style={{ flex: 1 }} onPress={() => post.refPost && router.push(`/post/${post.refPost.id}`)}>
         <T bold>{post.title}</T>
         {!!post.body && <T muted size={13}>{post.body}</T>}
-        <Text style={{ color: '#f59e0b', fontSize: 11.5 }}>
+        <Text style={{ color: '#d4a420', fontSize: 11.5 }}>
           Reminder{post.author?.kind === 'agent' ? ` · ${post.author.name}` : ''} · {timeAgo(post.postedAt)}
           {post.refPost ? ` · about “${(post.refPost.title || post.refPost.snippet).slice(0, 30)}”` : ''}
         </Text>
@@ -55,10 +55,10 @@ export function ReminderCard({ post }: { post: Post }) {
           setRead(qc, [post.id], true);
           qc.invalidateQueries({ queryKey: ['unread'] });
         }}
-        style={{ flexDirection: 'row', gap: 4, alignItems: 'center', borderWidth: 1, borderColor: '#f59e0b66', borderRadius: 5, paddingHorizontal: 9, paddingVertical: 6 }}
+        style={{ flexDirection: 'row', gap: 4, alignItems: 'center', borderWidth: 1, borderColor: '#d4a42066', borderRadius: 5, paddingHorizontal: 9, paddingVertical: 6 }}
       >
-        <Check size={14} color="#f59e0b" />
-        <Text style={{ color: '#f59e0b', fontWeight: '700', fontSize: 12.5 }}>Read</Text>
+        <Check size={14} color="#d4a420" />
+        <Text style={{ color: '#d4a420', fontWeight: '700', fontSize: 12.5 }}>Read</Text>
       </Pressable>
     </View>
   );
@@ -164,7 +164,8 @@ export const PostCard = memo(function PostCard({ post, expanded, manualRead }: {
 
   return (
     <View style={{ backgroundColor: t.card, paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: t.line }}>
-      {!post.isRead && <View style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, backgroundColor: t.accent }} />}
+      {!post.isRead && <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: GOLD_TINT }]} />}
+      {!post.isRead && <View style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, backgroundColor: GOLD }} />}
       <Row gap={10} style={{ alignItems: 'center', paddingHorizontal: PAD }}>
         <Avatar name={a.name} color={a.color} src={a.avatarUrl} kind={a.kind} size={36} />
         <View style={{ flex: 1 }}>

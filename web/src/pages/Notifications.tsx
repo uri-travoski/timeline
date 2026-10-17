@@ -59,9 +59,9 @@ export default function Notifications() {
           {q.data.items.map((n) => {
             const Icon = ICON[n.type] ?? Bell;
             return (
-              <button key={n.id} onClick={() => open(n)} className={`flex items-start gap-3 rounded-2xl border border-line p-3.5 text-left transition hover:border-accent ${n.readAt ? 'bg-card' : 'bg-accent-soft/60 shadow-[inset_3px_0_0_var(--accent)]'}`}>
+              <button key={n.id} onClick={() => open(n)} className={`flex items-start gap-3 rounded-2xl border border-line p-3.5 text-left transition hover:border-accent ${n.readAt ? 'bg-card' : 'border-gold/30 bg-[color-mix(in_srgb,var(--gold)_9%,var(--card))] shadow-[inset_3px_0_0_var(--gold)]'}`}>
                 {n.type === 'reminder' ? (
-                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-amber-500 text-white">
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gold text-black/80">
                     <AlarmClock size={19} />
                   </div>
                 ) : n.actor ? (
@@ -76,7 +76,7 @@ export default function Notifications() {
                   {n.body && <div className="line-clamp-2 text-sm text-muted">{n.body}</div>}
                   <div className="mt-1 text-xs text-muted">{timeAgo(n.createdAt)}</div>
                 </div>
-                {!n.readAt && <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-accent" />}
+                {!n.readAt && <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-gold" />}
               </button>
             );
           })}

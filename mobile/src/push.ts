@@ -24,7 +24,7 @@ export async function registerForPush(): Promise<string> {
       importance: Notifications.AndroidImportance.MAX,
       sound: 'default',
       vibrationPattern: [0, 400, 200, 400],
-      lightColor: '#f59e0b',
+      lightColor: '#d4a420',
       bypassDnd: false,
       showBadge: true,
     });

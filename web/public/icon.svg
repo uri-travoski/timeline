@@ -1,1 +1,26 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" rx="0" fill="#000"/><g transform="translate(17.0 17.0) scale(0.66)"><defs><mask id="m" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><g fill="#fff"><rect x="20" y="8" width="5" height="84" rx="0.8"/><path d="M37 14.5h46v17h-46v-4.5l-5-4l5-4z"/><path d="M37 41.5h46v17h-46v-4.5l-5-4l5-4z"/><path d="M37 68.5h46v17h-46v-4.5l-5-4l5-4z"/></g><g fill="#000"><circle cx="22.5" cy="23" r="9"/><circle cx="22.5" cy="50" r="9"/><circle cx="22.5" cy="77" r="9"/><rect x="44" y="18.4" width="31" height="3.4" rx="0.4"/><rect x="44" y="24.4" width="21" height="3.4" rx="0.4"/><rect x="44" y="45.4" width="31" height="3.4" rx="0.4"/><rect x="44" y="51.4" width="21" height="3.4" rx="0.4"/><rect x="44" y="72.4" width="31" height="3.4" rx="0.4"/><rect x="44" y="78.4" width="21" height="3.4" rx="0.4"/></g><g fill="#fff"><circle cx="22.5" cy="23" r="6.5"/><circle cx="22.5" cy="50" r="6.5"/><circle cx="22.5" cy="77" r="6.5"/></g></mask></defs><rect width="100" height="100" fill="#fff" mask="url(#m)"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <clipPath id="icon">
+      <rect width="1024" height="1024" rx="180" ry="180"/>
+    </clipPath>
+    <g id="entry">
+      <!-- gap ring around the node -->
+      <circle cx="365" cy="0" r="66" fill="#000"/>
+      <!-- node -->
+      <circle cx="365" cy="0" r="49" fill="#fff"/>
+      <!-- speech-bubble card -->
+      <path d="M445 0 L486 -24 L486 -71 L707 -71 L707 71 L486 71 L486 24 Z" fill="#fff"/>
+      <!-- text lines -->
+      <rect x="532" y="-41" width="141" height="27" fill="#000"/>
+      <rect x="532" y="14" width="105" height="28" fill="#000"/>
+    </g>
+  </defs>
+  <g clip-path="url(#icon)">
+    <rect width="1024" height="1024" fill="#000"/>
+    <!-- timeline bar, top edge to bottom edge -->
+    <rect x="342" y="0" width="46" height="1024" fill="#fff"/>
+    <use href="#entry" y="160"/>
+    <use href="#entry" y="512"/>
+    <use href="#entry" y="864"/>
+  </g>
+</svg>

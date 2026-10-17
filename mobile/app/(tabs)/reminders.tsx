@@ -60,8 +60,8 @@ export default function Reminders() {
           ListEmptyComponent={<Empty icon={<AlarmClock size={40} color={t.muted} />} title="No reminders">Tap + to add one.</Empty>}
           renderItem={({ item: r }) => (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: 7, backgroundColor: t.card, borderWidth: 1, borderColor: t.line }}>
-              <View style={{ width: 40, height: 40, borderRadius: 5, backgroundColor: '#f59e0b26', alignItems: 'center', justifyContent: 'center' }}>
-                <AlarmClock size={19} color="#f59e0b" />
+              <View style={{ width: 40, height: 40, borderRadius: 5, backgroundColor: '#d4a42026', alignItems: 'center', justifyContent: 'center' }}>
+                <AlarmClock size={19} color="#d4a420" />
               </View>
               <View style={{ flex: 1 }}>
                 <T bold>{r.title}</T>

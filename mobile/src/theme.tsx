@@ -19,6 +19,9 @@ export const THEMES: Record<string, Palette> = {
   sepia: { ...light, bg: '#f4ecd8', panel: '#fbf5e6', card: '#fdf8ec', raised: '#efe4c8', line: '#e2d4b0', text: '#3d3021', muted: '#7d6a50', accent: '#b4532a', accentSoft: '#f3dcc8', accentText: '#9a3f18' },
   rose: { ...light, bg: '#fff5f7', raised: '#ffe9ee', line: '#fbd5de', text: '#2a1219', muted: '#8c5a68', accent: '#e11d48', accentSoft: '#ffe0e8', accentText: '#be123c' },
 };
+/** Unread highlight (posts, reminders, notifications). */
+export const GOLD = '#d4a420';
+export const GOLD_TINT = 'rgba(212,164,32,0.10)';
 export const THEME_NAMES = ['system', 'light', 'dark', 'amoled', 'nord', 'ocean', 'forest', 'sepia', 'rose'];
 
 const Ctx = createContext<Palette>(dark);

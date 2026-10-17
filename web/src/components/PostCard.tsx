@@ -323,14 +323,14 @@ export function ReminderCard({ post }: { post: Post }) {
     qc.invalidateQueries({ queryKey: ['unread'] });
   };
   return (
-    <div className="fade-up flex flex-wrap items-center gap-3 rounded-md border border-l-[3px] border-amber-500/40 border-l-amber-500 bg-amber-500/[.07] px-4 py-3">
-      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-amber-500/15 text-amber-500">
+    <div className="fade-up flex flex-wrap items-center gap-3 rounded-md border border-l-[3px] border-gold/40 border-l-gold bg-gold/[.07] px-4 py-3">
+      <div className="grid h-9 w-9 shrink-0 place-items-center rounded-md bg-gold/15 text-gold">
         <AlarmClock size={20} />
       </div>
       <div className="min-w-0 flex-1 basis-48">
         <div className="font-semibold">{post.title}</div>
         {post.body && <div className="text-sm text-muted">{post.body}</div>}
-        <div className="text-xs text-amber-500">
+        <div className="text-xs text-gold">
           Reminder{post.author?.kind === 'agent' ? ` · set by ${post.author.name}` : ''} · {timeAgo(post.postedAt)}
           {post.refPost && (
             <>
@@ -342,7 +342,7 @@ export function ReminderCard({ post }: { post: Post }) {
           )}
         </div>
       </div>
-      <button className="btn btn-sm ml-auto shrink-0 border-amber-500/40 bg-transparent text-amber-500" onClick={dismiss}>
+      <button className="btn btn-sm ml-auto shrink-0 border-gold/40 bg-transparent text-gold" onClick={dismiss}>
         <Check size={15} /> Mark as read
       </button>
     </div>
@@ -398,7 +398,7 @@ export const PostCard = memo(function PostCard({ post, expanded }: { post: Post;
   return (
     <article
       ref={readRef as any}
-      className={`relative rounded-lg border border-line bg-card p-4 max-sm:-mx-3 max-sm:rounded-none max-sm:border-x-0 sm:p-5 ${post.isRead ? '' : 'shadow-[inset_3px_0_0_var(--accent)]'}`}
+      className={`relative rounded-lg border p-4 max-sm:-mx-3 max-sm:rounded-none max-sm:border-x-0 sm:p-5 ${post.isRead ? 'border-line bg-card' : 'border-gold/30 bg-[color-mix(in_srgb,var(--gold)_8%,var(--card))] shadow-[inset_3px_0_0_var(--gold)]'}`}
     >
       <header className="flex items-start gap-3">
         <Avatar name={author.name} color={author.color} src={author.avatarUrl} kind={author.kind} />

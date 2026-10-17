@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { FlatList, Pressable, RefreshControl, View } from 'react-native';
+import { FlatList, Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 import { router } from 'expo-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlarmClock, Bell } from 'lucide-react-native';
 import { api, type Notification } from '../src/api';
 import { timeAgo } from '../src/state';
-import { useTheme } from '../src/theme';
+import { GOLD, GOLD_TINT, useTheme } from '../src/theme';
 import { Screen } from '../src/components/Screen';
 import { Avatar, Chip, Empty, Loading, Row, T } from '../src/components/ui';
 
@@ -41,10 +41,11 @@ export default function Notifications() {
           refreshControl={<RefreshControl refreshing={q.isRefetching} onRefresh={() => void q.refetch()} tintColor={t.accent} colors={[t.accent]} />}
           ListEmptyComponent={<Empty icon={<Bell size={40} color={t.muted} />} title={unreadOnly ? "You're all caught up" : 'No notifications yet'} />}
           renderItem={({ item: n }) => (
-            <Pressable onPress={() => open(n)} style={{ flexDirection: 'row', gap: 12, padding: 12, borderRadius: 7, backgroundColor: n.readAt ? t.card : t.accentSoft, borderLeftWidth: n.readAt ? 0 : 3, borderLeftColor: t.accent }}>
+            <Pressable onPress={() => open(n)} style={{ flexDirection: 'row', gap: 12, padding: 12, borderRadius: 7, backgroundColor: t.card, overflow: 'hidden', borderLeftWidth: n.readAt ? 0 : 3, borderLeftColor: GOLD }}>
+              {!n.readAt && <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: GOLD_TINT }]} />}
               {n.type === 'reminder' ? (
-                <View style={{ width: 40, height: 40, borderRadius: 7, backgroundColor: '#f59e0b', alignItems: 'center', justifyContent: 'center' }}>
-                  <AlarmClock size={19} color="#fff" />
+                <View style={{ width: 40, height: 40, borderRadius: 7, backgroundColor: GOLD, alignItems: 'center', justifyContent: 'center' }}>
+                  <AlarmClock size={19} color="#1a1400" />
                 </View>
               ) : n.actor ? (
                 <Avatar name={n.actor.name} color={n.actor.color} src={n.actor.avatarUrl} kind={n.actor.kind} size={40} />
@@ -56,7 +57,7 @@ export default function Notifications() {
                 {!!n.body && <T muted size={13} numberOfLines={2}>{n.body}</T>}
                 <T muted size={11.5} style={{ marginTop: 3 }}>{timeAgo(n.createdAt)}</T>
               </View>
-              {!n.readAt && <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: t.accent, marginTop: 6 }} />}
+              {!n.readAt && <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: GOLD, marginTop: 6 }} />}
             </Pressable>
           )}
         />
