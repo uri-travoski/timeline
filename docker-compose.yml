@@ -1,0 +1,81 @@
+# Timeline: self-hosted timeline. Start with:  docker compose up -d
+# Then open http://<this-machine>:8080 (or your domain) and sign in with ADMIN_EMAIL / ADMIN_PASSWORD.
+services:
+  app:
+    build: .
+    image: timeline:latest
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"            # reachable from your LAN; put Caddy/Cloudflare Tunnel in front for HTTPS
+    volumes:
+      - ./data/app:/data       # thumbnails, reels renditions, upload spool, local files
+      # - ./firebase-service-account.json:/run/secrets/firebase.json:ro
+    environment:
+      # --- required ---
+      PUBLIC_URL: "http://192.168.8.101:8080"     # the URL you open the app on (https://timeline.example.com on a VPS)
+      APP_SECRET: "change-me-to-a-long-random-string"  # `openssl rand -base64 48`; keep it stable (encrypts storage credentials)
+      DATABASE_URL: "postgres://timeline:timeline-db-password@db:5432/timeline"
+
+      # --- admin account (created on first start; others are created by the admin in the app) ---
+      ADMIN_EMAIL: "admin@example.com"
+      ADMIN_PASSWORD: "change-me-please"
+      ADMIN_NAME: "Admin"
+      # ADMIN_RESET_PASSWORD: "true"   # set once to force ADMIN_PASSWORD again, then remove
+
+      # --- Google Drive (default storage once a user clicks "Connect Google Drive") ---
+      GOOGLE_CLIENT_ID: ""
+      GOOGLE_CLIENT_SECRET: ""
+      # GOOGLE_DRIVE_FOLDER: "Timeline"
+
+      # --- optional server-wide S3-compatible storage (Backblaze B2 / Cloudflare R2 / AWS S3) ---
+      # S3_NAME: "Backblaze B2"
+      # S3_ENDPOINT: "https://s3.us-west-004.backblazeb2.com"
+      # S3_REGION: "us-west-004"
+      # S3_BUCKET: "my-timeline"
+      # S3_ACCESS_KEY_ID: ""
+      # S3_SECRET_ACCESS_KEY: ""
+
+      # --- phone push notifications (Firebase Cloud Messaging) ---
+      # FIREBASE_SERVICE_ACCOUNT_FILE: "/run/secrets/firebase.json"
+
+      # --- tuning ---
+      TRASH_RETENTION_DAYS: "30"
+      MEDIA_CONCURRENCY: "1"        # parallel video transcodes (raise on a bigger VPS)
+      # HLS_HEIGHTS: "360,540,720,1080"
+      # YTDLP_COOKIES_FILE: "/data/instagram-cookies.txt"   # some Instagram posts need a logged-in cookie file
+
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: timeline
+      POSTGRES_PASSWORD: timeline-db-password
+      POSTGRES_DB: timeline
+    volumes:
+      - ./data/postgres:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U timeline"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Nightly database backup (keeps 14 days) into ./data/backups. Copy that folder off the server too.
+  backup:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    depends_on: [db]
+    environment:
+      PGPASSWORD: timeline-db-password
+    volumes:
+      - ./data/backups:/backups
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        while true; do
+          pg_dump -h db -U timeline -Fc timeline > /backups/timeline-$$(date +%F).dump && echo "backup ok"
+          find /backups -name 'timeline-*.dump' -mtime +14 -delete
+          sleep 86400
+        done

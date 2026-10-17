@@ -1,0 +1,7 @@
+**/node_modules
+**/dist
+server/data
+server/.env*
+mobile
+docs
+*.apk
