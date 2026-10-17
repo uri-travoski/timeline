@@ -286,6 +286,7 @@ export async function emptyTrash(user: AuthUser) {
 
 /** Worker: permanently remove things that sat in the recycle bin longer than the retention period. */
 export async function autoPurge(retentionDays: number) {
+  if (!(retentionDays > 0)) return; // TRASH_RETENTION_DAYS=0: keep deleted items until the admin empties the bin
   const cutoff = sql`now() - ${`${retentionDays} days`}::interval`;
   const posts = await sql`SELECT id FROM posts WHERE deleted_at IS NOT NULL AND deleted_at < ${cutoff} LIMIT 1000`;
   await purgePostsByIds(posts.map((p) => p.id));

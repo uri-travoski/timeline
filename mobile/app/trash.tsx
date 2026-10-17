@@ -3,7 +3,7 @@ import { RemoteImage } from '../src/components/RemoteImage';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Trash2 } from 'lucide-react-native';
 import { abs, api, type Post } from '../src/api';
-import { timeAgo } from '../src/state';
+import { timeAgo, useMe } from '../src/state';
 import { useTheme } from '../src/theme';
 import { Screen } from '../src/components/Screen';
 import { Button, Empty, Loading, Row, T } from '../src/components/ui';
@@ -11,6 +11,7 @@ import { Button, Empty, Loading, Row, T } from '../src/components/ui';
 export default function Trash() {
   const t = useTheme();
   const qc = useQueryClient();
+  const isAdmin = useMe().data?.user.role === 'admin';
   const q = useQuery({ queryKey: ['trash'], queryFn: () => api.get<{ posts: Post[] }>('/trash') });
   const refresh = () => {
     qc.invalidateQueries({ queryKey: ['trash'] });
@@ -18,7 +19,7 @@ export default function Trash() {
     qc.invalidateQueries({ queryKey: ['reels'] });
   };
   return (
-    <Screen title="Recycle bin" back right={<Button title="Empty" kind="danger" style={{ paddingVertical: 6 }} disabled={!q.data?.posts.length} onPress={() => Alert.alert('Empty the recycle bin?', 'Everything in it is deleted forever, files included.', [{ text: 'Cancel', style: 'cancel' }, { text: 'Empty', style: 'destructive', onPress: async () => (await api.del('/trash'), refresh()) }])} />}>
+    <Screen title="Recycle bin" back right={!isAdmin ? undefined : <Button title="Empty" kind="danger" style={{ paddingVertical: 6 }} disabled={!q.data?.posts.length} onPress={() => Alert.alert('Empty the recycle bin?', 'Everything in it is deleted forever, files included.', [{ text: 'Cancel', style: 'cancel' }, { text: 'Empty', style: 'destructive', onPress: async () => (await api.del('/trash'), refresh()) }])} />}>
       {q.isLoading ? (
         <Loading />
       ) : (
@@ -26,7 +27,7 @@ export default function Trash() {
           data={q.data?.posts ?? []}
           keyExtractor={(p) => p.id}
           contentContainerStyle={{ padding: 12, gap: 8 }}
-          ListEmptyComponent={<Empty icon={<Trash2 size={40} color={t.muted} />} title="Recycle bin is empty">Deleted posts stay here for 30 days.</Empty>}
+          ListEmptyComponent={<Empty icon={<Trash2 size={40} color={t.muted} />} title="Recycle bin is empty">Deleted posts stay here until the admin empties the bin.</Empty>}
           renderItem={({ item: p }) => (
             <Row style={{ padding: 12, borderRadius: 7, backgroundColor: t.card, borderWidth: 1, borderColor: t.line }} gap={10}>
               <RemoteImage uri={abs(p.attachments[0]?.thumbUrl)} style={{ width: 48, height: 48, borderRadius: 5 }} />

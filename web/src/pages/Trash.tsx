@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { File, MessageCircle, RotateCcw, Trash2 } from 'lucide-react';
 import { api, type Attachment, type Comment, type Post } from '../lib/api';
-import { bytes, timeAgo } from '../lib/hooks';
+import { bytes, timeAgo, useMe } from '../lib/hooks';
 import { Empty, Spinner, toast, toastError } from '../components/ui';
 
 interface TrashData {
@@ -13,6 +13,7 @@ interface TrashData {
 
 export default function Trash() {
   const qc = useQueryClient();
+  const isAdmin = useMe().data?.user.role === 'admin';
   const q = useQuery({ queryKey: ['trash'], queryFn: () => api.get<TrashData>('/trash') });
   const [tab, setTab] = useState<'post' | 'comment' | 'attachment'>('post');
   const refresh = () => {
@@ -48,9 +49,11 @@ export default function Trash() {
       <button className="btn btn-sm" onClick={() => restore(type, id)}>
         <RotateCcw size={15} /> Restore
       </button>
-      <button className="btn btn-sm btn-ghost text-danger" onClick={() => purge(type, id)} title="Delete forever">
-        <Trash2 size={16} />
-      </button>
+      {isAdmin && (
+        <button className="btn btn-sm btn-ghost text-danger" onClick={() => purge(type, id)} title="Delete forever">
+          <Trash2 size={16} />
+        </button>
+      )}
     </div>
   );
 
@@ -58,11 +61,13 @@ export default function Trash() {
     <div className="mx-auto max-w-[720px] px-3 pt-4 sm:px-5">
       <div className="mb-2 flex items-center gap-2">
         <h1 className="mr-auto text-2xl font-extrabold">Recycle bin</h1>
-        <button className="btn btn-sm btn-danger" onClick={empty} disabled={!counts.post && !counts.comment && !counts.attachment}>
-          Empty bin
-        </button>
+        {isAdmin && (
+          <button className="btn btn-sm btn-danger" onClick={empty} disabled={!counts.post && !counts.comment && !counts.attachment}>
+            Empty bin
+          </button>
+        )}
       </div>
-      <p className="mb-4 text-sm text-muted">Deleted items stay here for 30 days (set by your server), then they're removed for good, files included.</p>
+      <p className="mb-4 text-sm text-muted">Deleted items stay here and can be restored. {isAdmin ? 'Only you, the admin, can delete them forever; the server also clears items after its retention period (30 days by default).' : 'Only the admin can delete them forever.'}</p>
       <div className="mb-4 flex gap-2">
         {(['post', 'comment', 'attachment'] as const).map((t) => (
           <button key={t} className="chip" data-on={tab === t} onClick={() => setTab(t)}>

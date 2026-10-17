@@ -222,6 +222,12 @@ route(account, { method: 'post', path: '/me/password', tag: 'Account', summary: 
 
 const scopesSchema = z.array(z.enum(['read', 'write', 'delete', 'purge'])).min(1);
 
+/** "purge" (delete forever) is only ever granted to the admin's own personal keys, never to agents or other users. */
+function checkScopes(scopes: string[], mayPurge: boolean) {
+  if (!mayPurge && scopes.includes('purge')) throw badRequest('Only the admin can hold the "delete forever" permission, and never an AI agent');
+  return scopes;
+}
+
 async function issueKey(userId: string, name: string, scopes: string[]) {
   const key = randomToken('tlk_');
   const [k] = await sql`INSERT INTO api_keys (user_id, name, prefix, key_hash, scopes)
@@ -256,7 +262,7 @@ route(
     const user = requireHuman(c);
     const [a] = await sql`INSERT INTO users (kind, owner_id, name, description, avatar_color)
                           VALUES ('agent', ${user.id}, ${body.name}, ${body.description ?? ''}, ${body.color ?? pickColor()}) RETURNING *`;
-    const key = await issueKey(a.id, 'default', body.scopes ?? ['read', 'write', 'delete']);
+    const key = await issueKey(a.id, 'default', checkScopes(body.scopes ?? ['read', 'write', 'delete'], false));
     return { agent: publicUser(a), apiKey: key.key, keyInfo: key };
   },
 );
@@ -290,14 +296,16 @@ route(account, { method: 'delete', path: '/agents/{id}', tag: 'Agents', summary:
 route(account, { method: 'post', path: '/agents/{id}/keys', tag: 'Agents', summary: 'Issue another API key for an agent', params: idParam, body: z.object({ name: z.string().max(80).optional(), scopes: scopesSchema.optional() }) }, async (c, { params, body }) => {
   const user = requireHuman(c);
   await myAgent(user.id, params.id);
-  return issueKey(params.id, body.name ?? 'key', body.scopes ?? ['read', 'write', 'delete']);
+  return issueKey(params.id, body.name ?? 'key', checkScopes(body.scopes ?? ['read', 'write', 'delete'], false));
 });
 
 route(account, { method: 'get', path: '/keys', tag: 'Agents', summary: 'Your personal API keys (act as you)' }, async (c) => keysFor([requireHuman(c).id]));
 
-route(account, { method: 'post', path: '/keys', tag: 'Agents', summary: 'Create a personal API key', body: z.object({ name: z.string().min(1).max(80), scopes: scopesSchema.optional() }) }, async (c, { body }) =>
-  issueKey(requireHuman(c).id, body.name, body.scopes ?? ALL_SCOPES),
-);
+route(account, { method: 'post', path: '/keys', tag: 'Agents', summary: 'Create a personal API key', body: z.object({ name: z.string().min(1).max(80), scopes: scopesSchema.optional() }) }, async (c, { body }) => {
+  const user = requireHuman(c);
+  const admin = user.role === 'admin';
+  return issueKey(user.id, body.name, checkScopes(body.scopes ?? (admin ? ALL_SCOPES : ALL_SCOPES.filter((s) => s !== 'purge')), admin));
+});
 
 route(account, { method: 'delete', path: '/keys/{id}', tag: 'Agents', summary: 'Revoke an API key (yours or one of your agents)', params: idParam }, async (c, { params }) => {
   const user = requireHuman(c);

@@ -116,6 +116,15 @@ export function requireHuman(c: Context<AppEnv>) {
   return user;
 }
 
+/** Permanent deletion: only the admin person (never other users, never AI agents), and only with a key that has the "purge" scope. */
+export function requirePurge(c: Context<AppEnv>) {
+  const user = c.get('user');
+  if (user.kind !== 'human' || user.role !== 'admin')
+    throw new HTTPException(403, { message: 'Only the admin can delete permanently. Move it to the recycle bin instead.' });
+  requireScope(c, 'purge');
+  return user;
+}
+
 export function requireAdmin(c: Context<AppEnv>) {
   const user = requireHuman(c);
   if (user.role !== 'admin') throw new HTTPException(403, { message: 'Admin only' });

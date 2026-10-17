@@ -1,7 +1,7 @@
 import { HTTPException } from 'hono/http-exception';
 import { avatarUrl } from '../lib/avatar.ts';
 import { bool, csv, idParam, newApi, route, z } from '../lib/api.ts';
-import { requireScope } from '../lib/auth.ts';
+import { requirePurge } from '../lib/auth.ts';
 import { badRequest } from '../lib/errors.ts';
 import { sql } from '../db.ts';
 import * as posts from '../services/posts.ts';
@@ -130,8 +130,8 @@ route(content, { method: 'post', path: '/posts/{id}/restore', tag: 'Posts', summ
   posts.restorePost(c.get('user'), params.id),
 );
 
-route(content, { method: 'delete', path: '/posts/{id}/purge', tag: 'Posts', summary: 'Permanently delete a post that is in the recycle bin (needs "purge" scope)', params: idParam }, (c, { params }) => {
-  requireScope(c, 'purge');
+route(content, { method: 'delete', path: '/posts/{id}/purge', tag: 'Posts', summary: 'Permanently delete a post that is in the recycle bin (admin only, needs the "purge" scope)', params: idParam }, (c, { params }) => {
+  requirePurge(c);
   return posts.purgePost(c.get('user'), params.id);
 });
 
@@ -356,12 +356,12 @@ route(content, { method: 'get', path: '/trash', tag: 'Recycle bin', summary: 'Li
 route(content, { method: 'post', path: '/trash/{type}/{id}/restore', tag: 'Recycle bin', summary: 'Restore an item', params: trashParams }, (c, { params }) =>
   misc.restoreFromTrash(c.get('user'), params.type, params.id),
 );
-route(content, { method: 'delete', path: '/trash/{type}/{id}', tag: 'Recycle bin', summary: 'Delete an item forever (needs "purge" scope)', params: trashParams }, (c, { params }) => {
-  requireScope(c, 'purge');
+route(content, { method: 'delete', path: '/trash/{type}/{id}', tag: 'Recycle bin', summary: 'Delete an item forever (admin only, needs the "purge" scope)', params: trashParams }, (c, { params }) => {
+  requirePurge(c);
   return misc.purgeFromTrash(c.get('user'), params.type, params.id);
 });
-route(content, { method: 'delete', path: '/trash', tag: 'Recycle bin', summary: 'Empty the recycle bin (needs "purge" scope)' }, (c) => {
-  requireScope(c, 'purge');
+route(content, { method: 'delete', path: '/trash', tag: 'Recycle bin', summary: 'Empty the recycle bin (admin only, needs the "purge" scope)' }, (c) => {
+  requirePurge(c);
   return misc.emptyTrash(c.get('user'));
 });
 

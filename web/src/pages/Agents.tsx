@@ -9,7 +9,6 @@ const SCOPES = [
   { id: 'read', label: 'Read', hint: 'search and read posts' },
   { id: 'write', label: 'Write', hint: 'post, edit, comment, reminders' },
   { id: 'delete', label: 'Delete', hint: 'move to recycle bin' },
-  { id: 'purge', label: 'Delete forever', hint: 'empty the recycle bin' },
 ];
 
 function copy(text: string) {
