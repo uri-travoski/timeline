@@ -10,6 +10,7 @@ import {
 import { decrypt, encrypt, hashPassword, randomToken, sign, tokenHash, verifyPassword, verifySig } from '../lib/crypto.ts';
 import { badRequest, forbidden, notFound } from '../lib/errors.ts';
 import { notify, pushStatus, unreadCount, vapidKeys } from '../lib/notify.ts';
+import { avatarUrl, clearAvatar, setAvatar } from '../lib/avatar.ts';
 import { seedCategories } from '../services/misc.ts';
 import { backendsFor, createBackend, forgetDriver, makeDriver, pickBackend, publicBackend } from '../storage/index.ts';
 import { DRIVE_SCOPES, GDriveDriver, oauthClient } from '../storage/gdrive.ts';
@@ -23,11 +24,12 @@ export const DEFAULT_SETTINGS = {
   push: { agent_post: true, reminder: true, comment: true, share: true },
   reelsMuted: false,
   dataSaver: false,
+  timelineView: 'me',
 };
 
 function publicUser(u: any) {
   return {
-    id: u.id, kind: u.kind, role: u.role, name: u.name, email: u.email, color: u.avatar_color,
+    id: u.id, kind: u.kind, role: u.role, name: u.name, email: u.email, color: u.avatar_color, avatarUrl: avatarUrl(u.id, u.avatar_v),
     description: u.description, disabled: u.disabled, createdAt: u.created_at, lastSeenAt: u.last_seen_at,
     settings: { ...DEFAULT_SETTINGS, ...(u.settings ?? {}), push: { ...DEFAULT_SETTINGS.push, ...(u.settings?.push ?? {}) } },
   };
@@ -152,6 +154,7 @@ const settingsSchema = z.object({
   push: z.object({ agent_post: z.boolean(), reminder: z.boolean(), comment: z.boolean(), share: z.boolean() }).partial().optional(),
   reelsMuted: z.boolean().optional(),
   dataSaver: z.boolean().optional(),
+  timelineView: z.string().max(40).optional().describe("Whose posts the feed shows: 'me', 'all' (combined) or another user's id"),
   defaultBackendId: z.string().uuid().nullable().optional(),
 });
 
@@ -159,16 +162,16 @@ route(account, { method: 'get', path: '/me', tag: 'Account', summary: 'Current u
   const user = c.get('user');
   const [u] = await sql`SELECT * FROM users WHERE id = ${user.id}`;
   const timelines = await sql`
-    SELECT u.id, u.name, u.avatar_color, s.can_comment FROM timeline_shares s JOIN users u ON u.id = s.owner_id
+    SELECT u.id, u.name, u.avatar_color, u.avatar_v, s.can_comment FROM timeline_shares s JOIN users u ON u.id = s.owner_id
     WHERE s.viewer_id = ${user.timelineId} AND s.status = 'accepted' ORDER BY u.name`;
-  const [owner] = await sql`SELECT id, name, avatar_color FROM users WHERE id = ${user.timelineId}`;
+  const [owner] = await sql`SELECT id, name, avatar_color, avatar_v FROM users WHERE id = ${user.timelineId}`;
   return {
     user: publicUser(u),
     via: user.via,
     scopes: user.scopes,
     timelines: [
-      { id: owner.id, name: owner.name, color: owner.avatar_color, mine: true, canComment: true },
-      ...timelines.map((t) => ({ id: t.id, name: t.name, color: t.avatar_color, mine: false, canComment: t.can_comment })),
+      { id: owner.id, name: owner.name, color: owner.avatar_color, avatarUrl: avatarUrl(owner.id, owner.avatar_v), mine: true, canComment: true },
+      ...timelines.map((t) => ({ id: t.id, name: t.name, color: t.avatar_color, avatarUrl: avatarUrl(t.id, t.avatar_v), mine: false, canComment: t.can_comment })),
     ],
     unread: await unreadCount(user.timelineId),
   };
@@ -191,6 +194,21 @@ route(
     return publicUser(n);
   },
 );
+
+// Raw image body (any common format; HEIC/WebP/PNG/JPEG...). Cropped to a centred square.
+account.put('/me/avatar', async (c) => {
+  const user = requireHuman(c);
+  if (!c.req.raw.body) throw badRequest('Empty body');
+  const [u] = await sql`SELECT avatar_v FROM users WHERE id = ${user.id}`;
+  const v = await setAvatar(user.id, c.req.raw.body, u?.avatar_v ?? null);
+  return c.json({ avatarUrl: avatarUrl(user.id, v) });
+});
+account.delete('/me/avatar', async (c) => {
+  const user = requireHuman(c);
+  const [u] = await sql`SELECT avatar_v FROM users WHERE id = ${user.id}`;
+  await clearAvatar(user.id, u?.avatar_v ?? null);
+  return c.json({ avatarUrl: null });
+});
 
 route(account, { method: 'post', path: '/me/password', tag: 'Account', summary: 'Change password', body: z.object({ current: z.string(), next: z.string().min(8) }) }, async (c, { body }) => {
   const user = requireHuman(c);

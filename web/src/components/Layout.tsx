@@ -35,30 +35,6 @@ function HomeLink({ className, children }: { className: string; children: ReactN
   );
 }
 
-function TimelineSwitcher() {
-  const me = useMe().data;
-  const [filters, set] = useFilters();
-  if (!me || me.timelines.length < 2) return null;
-  const own = me.timelines[0].id;
-  const sel = filters.timelines ?? [own];
-  const isAll = sel.length === me.timelines.length || sel.includes('all');
-  const options = [
-    ...me.timelines.map((t) => ({ key: t.id, label: t.mine ? 'Me' : t.name, color: t.color, value: t.mine ? undefined : [t.id] })),
-    { key: 'all', label: me.timelines.length === 2 ? `Me + ${me.timelines[1].name}` : 'Combined', color: '', value: ['all'] },
-  ];
-  const active = (k: string) => (k === 'all' ? isAll : !isAll && sel.length === 1 && sel[0] === k);
-  return (
-    <div className="flex shrink-0 rounded-xl border border-line bg-card p-1 text-sm">
-      {options.map((o) => (
-        <button key={o.key} className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 font-medium ${active(o.key) ? 'bg-raised text-text' : 'text-muted'}`} onClick={() => set({ timelines: o.value })}>
-          {o.color && <span className="h-2 w-2 rounded-full" style={{ background: o.color }} />}
-          {o.label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function SearchBox({ className = '' }: { className?: string }) {
   const [filters, set] = useFilters();
   const loc = useLocation();
@@ -160,7 +136,7 @@ export function Layout() {
         {me?.user.role === 'admin' && <NavItem to="/admin" icon={<Shield size={19} />}>Admin</NavItem>}
         {me && (
           <NavLink to="/settings" className="mt-auto flex items-center gap-2.5 rounded-2xl bg-raised p-2.5">
-            <Avatar name={me.user.name} color={me.user.color} size={36} />
+            <Avatar name={me.user.name} color={me.user.color} src={me.user.avatarUrl} size={36} />
             <div className="min-w-0">
               <div className="truncate font-semibold">{me.user.name}</div>
               <div className="flex items-center gap-1 truncate text-xs text-muted">
@@ -178,17 +154,11 @@ export function Layout() {
             <Logo size={28} />
           </HomeLink>
           <SearchBox className="min-w-0 flex-1" />
-          <div className="hidden md:block">
-            <TimelineSwitcher />
-          </div>
           <BellButton />
           <button className="btn btn-primary hidden sm:inline-flex" onClick={() => composer.open()}>
             <Plus size={18} /> New post
           </button>
         </header>
-        <div className="px-4 pt-3 md:hidden empty:hidden">
-          <TimelineSwitcher />
-        </div>
         <main className="min-w-0 flex-1 pb-28 lg:pb-10">
           <Outlet />
         </main>

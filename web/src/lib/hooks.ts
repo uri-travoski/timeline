@@ -31,6 +31,9 @@ const LIST_KEYS = ['timelines', 'categories', 'tags', 'fileTypes', 'authors'] as
 /** Feed filters live in the URL so a filtered view can be bookmarked or shared. */
 export function useFilters(): [Filters, (patch: Partial<Filters>) => void, () => void] {
   const [params, setParams] = useSearchParams();
+  const me = useMe().data;
+  const view = me?.user.settings.timelineView;
+  const viewOk = !!view && view !== 'me' && (view === 'all' || me!.timelines.some((t) => t.id === view));
   const filters = useMemo<Filters>(() => {
     const f: Filters = {};
     for (const k of LIST_KEYS) {
@@ -43,8 +46,10 @@ export function useFilters(): [Filters, (patch: Partial<Filters>) => void, () =>
       if (v) f[k] = v;
     }
     if (params.get('unread') === 'true') f.unread = true;
+    // Which timelines to show is an account setting (Settings → Timelines); a ?timelines= link still wins.
+    if (!f.timelines && viewOk) f.timelines = view === 'all' ? ['all'] : [view!];
     return f;
-  }, [params]);
+  }, [params, view, viewOk]);
 
   const update = useCallback(
     (patch: Partial<Filters>) => {

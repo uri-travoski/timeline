@@ -1,4 +1,5 @@
 import type { Fragment } from 'postgres';
+import { avatarUrl } from '../lib/avatar.ts';
 import { sql } from '../db.ts';
 import { readableTimelines, type AuthUser } from '../lib/auth.ts';
 import { badRequest, conflict, forbidden, notFound } from '../lib/errors.ts';
@@ -191,7 +192,7 @@ export async function serializePosts(user: AuthUser, rows: any[]) {
   const [atts, tags, users, cats, counts, reads, refs, shares] = await Promise.all([
     sql`SELECT * FROM attachments WHERE post_id = ANY(${ids}) AND deleted_at IS NULL ORDER BY sort, created_at`,
     sql`SELECT pt.post_id, t.name FROM post_tags pt JOIN tags t ON t.id = pt.tag_id WHERE pt.post_id = ANY(${ids}) ORDER BY t.name`,
-    sql`SELECT u.id, u.name, u.kind, u.avatar_color, u.owner_id, o.name AS owner_name
+    sql`SELECT u.id, u.name, u.kind, u.avatar_color, u.avatar_v, u.owner_id, o.name AS owner_name
         FROM users u LEFT JOIN users o ON o.id = u.owner_id WHERE u.id = ANY(${userIds})`,
     catIds.length ? sql`SELECT * FROM categories WHERE id = ANY(${catIds})` : Promise.resolve([] as any[]),
     sql`SELECT post_id, count(*)::int AS n FROM comments WHERE post_id = ANY(${ids}) AND deleted_at IS NULL GROUP BY post_id`,
@@ -228,7 +229,7 @@ export async function serializePosts(user: AuthUser, rows: any[]) {
       category: cat ? { id: cat.id, name: cat.name, color: cat.color, icon: cat.icon, isPrivate: cat.is_private } : null,
       tags: (tagsBy.get(p.id) ?? []).map((t: any) => t.name),
       author: author
-        ? { id: author.id, name: author.name, kind: author.kind, color: author.avatar_color, ownerName: author.owner_name ?? null }
+        ? { id: author.id, name: author.name, kind: author.kind, color: author.avatar_color, avatarUrl: avatarUrl(author.id, author.avatar_v), ownerName: author.owner_name ?? null }
         : null,
       source: p.source,
       sourceName: p.source_name,

@@ -65,7 +65,7 @@ export default function Notifications() {
                     <AlarmClock size={19} />
                   </div>
                 ) : n.actor ? (
-                  <Avatar name={n.actor.name} color={n.actor.color} kind={n.actor.kind} size={40} />
+                  <Avatar name={n.actor.name} color={n.actor.color} src={n.actor.avatarUrl} kind={n.actor.kind} size={40} />
                 ) : (
                   <div className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-raised">
                     <Icon size={19} />

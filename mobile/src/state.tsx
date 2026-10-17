@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react';
 import { useQuery, type QueryClient } from '@tanstack/react-query';
 import { api, type Category, type Filters, type Me } from './api';
 
@@ -14,7 +14,17 @@ export function FiltersProvider({ children }: { children: ReactNode }) {
   const state = useState<Filters>({});
   return <FiltersCtx.Provider value={state}>{children}</FiltersCtx.Provider>;
 }
-export const useFilters = () => useContext(FiltersCtx);
+/** The stored filters plus the account's "whose posts" setting (Settings → Timelines) as the default. */
+export function useFilters(): [Filters, (f: Filters) => void] {
+  const [stored, set] = useContext(FiltersCtx);
+  const me = useMe().data;
+  const view = me?.user.settings.timelineView;
+  const ok = !!view && view !== 'me' && (view === 'all' || me!.timelines.some((t) => t.id === view));
+  const merged = useMemo<Filters>(() => (!stored.timelines && ok ? { ...stored, timelines: view === 'all' ? ['all'] : [view!] } : stored), [stored, view, ok]);
+  // The default is derived, never stored, so changing the setting takes effect immediately.
+  const setFilters = useCallback((f: Filters) => set(ok && f.timelines && (f.timelines[0] === (view === 'all' ? 'all' : view)) ? { ...f, timelines: undefined } : f), [set, ok, view]);
+  return [merged, setFilters];
+}
 
 export function activeFilterCount(f: Filters) {
   return [f.categories?.length, f.tags?.length, f.fileTypes?.length, f.from || f.to, f.authors?.length, f.unread].filter(Boolean).length;

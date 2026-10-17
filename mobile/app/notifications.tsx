@@ -47,7 +47,7 @@ export default function Notifications() {
                   <AlarmClock size={19} color="#fff" />
                 </View>
               ) : n.actor ? (
-                <Avatar name={n.actor.name} color={n.actor.color} kind={n.actor.kind} size={40} />
+                <Avatar name={n.actor.name} color={n.actor.color} src={n.actor.avatarUrl} kind={n.actor.kind} size={40} />
               ) : (
                 <Avatar name="T" color={t.accent} size={40} />
               )}

@@ -1,4 +1,5 @@
 import { sql } from '../db.ts';
+import { avatarUrl } from '../lib/avatar.ts';
 import type { AuthUser } from '../lib/auth.ts';
 import { badRequest, forbidden, notFound } from '../lib/errors.ts';
 import { enqueue } from '../lib/jobs.ts';
@@ -15,14 +16,14 @@ function serializeComment(c: any) {
     parentId: c.parent_id,
     body: c.body,
     source: c.source,
-    author: { id: c.author_id, name: c.author_name, kind: c.author_kind, color: c.author_color },
+    author: { id: c.author_id, name: c.author_name, kind: c.author_kind, color: c.author_color, avatarUrl: avatarUrl(c.author_id, c.author_avatar_v) },
     createdAt: c.created_at,
     editedAt: c.edited_at,
     deletedAt: c.deleted_at,
   };
 }
 
-const commentSelect = sql`SELECT c.*, u.name AS author_name, u.kind AS author_kind, u.avatar_color AS author_color
+const commentSelect = sql`SELECT c.*, u.name AS author_name, u.kind AS author_kind, u.avatar_color AS author_color, u.avatar_v AS author_avatar_v
                           FROM comments c JOIN users u ON u.id = c.author_id`;
 
 export async function listComments(user: AuthUser, postId: string) {

@@ -1,10 +1,14 @@
-import type { ReactNode } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View, type PressableProps, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import { useState, type ReactNode } from 'react';
+import { ActivityIndicator, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View, type PressableProps, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Bot, X } from 'lucide-react-native';
+import { abs } from '../api';
 import { useTheme } from '../theme';
 
-export function Avatar({ name, color, kind, size = 38 }: { name: string; color: string; kind?: 'human' | 'agent'; size?: number }) {
+export function Avatar({ name, color, kind, size = 38, src }: { name: string; color: string; kind?: 'human' | 'agent'; size?: number; src?: string | null }) {
+  const [broken, setBroken] = useState(false);
+  const uri = abs(src);
+  if (uri && !broken) return <Image source={{ uri }} onError={() => setBroken(true)} style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color }} />;
   return (
     <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color, alignItems: 'center', justifyContent: 'center' }}>
       {kind === 'agent' ? <Bot size={size * 0.5} color="#fff" /> : <Text style={{ color: '#fff', fontWeight: '700', fontSize: size * 0.4 }}>{name.trim().charAt(0).toUpperCase() || '?'}</Text>}

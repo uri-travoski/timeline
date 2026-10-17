@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useSearchParams } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, Cloud, Database, HardDrive, KeyRound, Lock, Plus, Trash2 } from 'lucide-react';
-import { api, type Settings as S } from '../lib/api';
+import { Camera, Check, Cloud, Database, HardDrive, KeyRound, Lock, Plus, Trash2 } from 'lucide-react';
+import { api, uploadAvatar, type Settings as S } from '../lib/api';
 import { THEMES, applyTheme, bytes, timeAgo, useCategories, useMe } from '../lib/hooks';
 import { Avatar, Modal, Section, Spinner, Toggle, toast, toastError } from '../components/ui';
 import { KeyReveal } from './Agents';
@@ -80,6 +80,31 @@ export default function Settings() {
         </div>
       </Section>
 
+      {meQ.data!.timelines.length > 1 && (
+        <Section title="Timelines">
+          <div className="mb-2 text-sm text-muted">Whose posts the timeline and Reels show.</div>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {[
+              { id: 'me', label: 'Only mine', hint: 'Your posts and your AI agents’ posts.', color: '' },
+              ...meQ.data!.timelines.filter((t) => !t.mine).map((t) => ({ id: t.id, label: `${t.name} only`, hint: `${t.name}’s timeline.`, color: t.color })),
+              { id: 'all', label: meQ.data!.timelines.length === 2 ? `Me + ${meQ.data!.timelines.find((t) => !t.mine)!.name}` : 'Everyone combined', hint: 'Both timelines merged. Private categories of others stay hidden.', color: '' },
+            ].map((o) => {
+              const on = (me.settings.timelineView ?? 'me') === o.id;
+              return (
+                <button key={o.id} className={`rounded-2xl border p-3 text-left ${on ? 'border-accent bg-accent-soft' : 'border-line'}`} onClick={() => saveSettings({ timelineView: o.id })}>
+                  <div className="flex items-center gap-2 font-semibold">
+                    {on && <Check size={16} className="text-accent-text" />}
+                    {o.color && <span className="h-2 w-2 rounded-full" style={{ background: o.color }} />}
+                    {o.label}
+                  </div>
+                  <div className="text-sm text-muted">{o.hint}</div>
+                </button>
+              );
+            })}
+          </div>
+        </Section>
+      )}
+
       <Section title="Reading">
         <div className="mb-1 text-sm font-medium">Mark posts as read</div>
         <div className="mb-2 grid gap-2 sm:grid-cols-2">
@@ -139,7 +164,44 @@ function Profile({ me }: { me: any }) {
   return (
     <Section title="Profile">
       <div className="flex flex-wrap items-center gap-4">
-        <Avatar name={name} color={me.color} size={52} />
+        <div className="flex flex-col items-center gap-1.5">
+          <Avatar name={name} color={me.color} src={me.avatarUrl} size={72} />
+          <div className="flex gap-2 text-xs">
+            <label className="flex cursor-pointer items-center gap-1 font-medium text-accent-text hover:underline">
+              <Camera size={13} /> {me.avatarUrl ? 'Change' : 'Upload'}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={async (e) => {
+                  const f = e.target.files?.[0];
+                  e.target.value = '';
+                  if (!f) return;
+                  try {
+                    await uploadAvatar(f);
+                    await qc.invalidateQueries({ queryKey: ['me'] });
+                    qc.invalidateQueries({ queryKey: ['posts'] });
+                    toast('Profile picture updated');
+                  } catch (err) {
+                    toastError(err);
+                  }
+                }}
+              />
+            </label>
+            {me.avatarUrl && (
+              <button
+                className="text-muted hover:text-danger"
+                onClick={async () => {
+                  await api.del('/me/avatar').catch(toastError);
+                  qc.invalidateQueries({ queryKey: ['me'] });
+                  qc.invalidateQueries({ queryKey: ['posts'] });
+                }}
+              >
+                Remove
+              </button>
+            )}
+          </div>
+        </div>
         <div className="flex min-w-48 flex-1 gap-2">
           <input className="field" value={name} onChange={(e) => setName(e.target.value)} />
           <button

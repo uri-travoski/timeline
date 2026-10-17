@@ -10,7 +10,7 @@ export interface Attachment {
   status: 'pending' | 'stored' | 'failed'; mediaStatus: 'none' | 'processing' | 'ready' | 'failed';
   url: string; downloadUrl: string; thumbUrl: string | null; posterUrl: string | null; hlsUrl: string | null;
 }
-export interface Author { id: string; name: string; kind: 'human' | 'agent'; color: string; ownerName?: string | null }
+export interface Author { id: string; name: string; kind: 'human' | 'agent'; color: string; avatarUrl?: string | null; ownerName?: string | null }
 export interface Category { id: string; name: string; color: string; icon: string; isPrivate: boolean; postCount: number; mine: boolean; timelineId: string }
 export interface Post {
   id: string; kind: 'post' | 'reminder'; timeline: { id: string; name: string; mine: boolean };
@@ -22,17 +22,17 @@ export interface Post {
 }
 export interface Comment { id: string; postId: string; body: string; author: Author; createdAt: string; editedAt: string | null }
 export interface Settings {
-  theme: string; markRead: 'auto' | 'manual'; reelsMuted: boolean; dataSaver: boolean;
+  theme: string; markRead: 'auto' | 'manual'; reelsMuted: boolean; dataSaver: boolean; timelineView?: string;
   push: { agent_post: boolean; reminder: boolean; comment: boolean; share: boolean };
 }
 export interface Me {
-  user: { id: string; name: string; email: string; color: string; role: 'admin' | 'user'; settings: Settings };
+  user: { id: string; name: string; email: string; color: string; avatarUrl?: string | null; role: 'admin' | 'user'; settings: Settings };
   timelines: { id: string; name: string; color: string; mine: boolean }[];
   unread: number;
 }
 export interface Notification {
   id: string; type: 'agent_post' | 'reminder' | 'comment' | 'share'; title: string; body: string; postId: string | null;
-  readAt: string | null; createdAt: string; actor: { name: string; kind: 'human' | 'agent'; color: string } | null;
+  readAt: string | null; createdAt: string; actor: { name: string; kind: 'human' | 'agent'; color: string; avatarUrl?: string | null } | null;
 }
 export interface Reminder { id: string; title: string; body: string; dueAt: string; repeat: string | null; status: string; createdBy: string | null }
 export interface Page<T> { items: T[]; nextCursor: string | null }
@@ -129,6 +129,17 @@ export async function uploadFile(uri: string, filename: string, mime: string, on
   const data = JSON.parse(res.body || '{}');
   if (res.status < 200 || res.status >= 300) throw new ApiError(res.status, data.error ?? 'Upload failed');
   return data;
+}
+
+/** Sets the signed-in user's profile picture; the server crops it to a square. */
+export async function uploadAvatar(uri: string, mime: string): Promise<string | null> {
+  const res = await createUploadTask(`${server}/api/me/avatar`, uri, {
+    httpMethod: 'PUT', uploadType: FileSystemUploadType.BINARY_CONTENT, headers: { authorization: `Bearer ${token}`, 'content-type': mime, 'x-client': Platform.OS },
+  }).uploadAsync();
+  if (!res) throw new ApiError(0, 'Upload cancelled');
+  const data = JSON.parse(res.body || '{}');
+  if (res.status < 200 || res.status >= 300) throw new ApiError(res.status, data.error ?? 'Upload failed');
+  return data.avatarUrl ?? null;
 }
 
 export interface Filters {

@@ -223,7 +223,7 @@ export function Comments({ post, autoFocus }: { post: Post; autoFocus?: boolean 
       <div className="flex flex-col gap-3">
         {data?.map((c) => (
           <div key={c.id} className="group flex gap-2.5">
-            <Avatar name={c.author.name} color={c.author.color} kind={c.author.kind} size={30} />
+            <Avatar name={c.author.name} color={c.author.color} src={c.author.avatarUrl} kind={c.author.kind} size={30} />
             <div className="min-w-0 flex-1">
               {editing === c.id ? (
                 <div className="flex gap-2">
@@ -401,7 +401,7 @@ export const PostCard = memo(function PostCard({ post, expanded }: { post: Post;
       className={`relative rounded-lg border border-line bg-card p-4 max-sm:-mx-3 max-sm:rounded-none max-sm:border-x-0 sm:p-5 ${post.isRead ? '' : 'shadow-[inset_3px_0_0_var(--accent)]'}`}
     >
       <header className="flex items-start gap-3">
-        <Avatar name={author.name} color={author.color} kind={author.kind} />
+        <Avatar name={author.name} color={author.color} src={author.avatarUrl} kind={author.kind} />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2 text-[15px] font-semibold">
             <span className="truncate">{author.name}</span>

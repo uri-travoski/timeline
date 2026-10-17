@@ -1,4 +1,5 @@
 import { HTTPException } from 'hono/http-exception';
+import { avatarUrl } from '../lib/avatar.ts';
 import { bool, csv, idParam, newApi, route, z } from '../lib/api.ts';
 import { requireScope } from '../lib/auth.ts';
 import { badRequest } from '../lib/errors.ts';
@@ -318,7 +319,7 @@ route(
   async (c, { query }) => {
     const user = c.get('user');
     const rows = await sql`
-      SELECT n.*, u.name AS actor_name, u.kind AS actor_kind, u.avatar_color AS actor_color FROM notifications n
+      SELECT n.*, u.name AS actor_name, u.kind AS actor_kind, u.avatar_color AS actor_color, u.avatar_v AS actor_avatar_v FROM notifications n
       LEFT JOIN users u ON u.id = n.actor_id
       WHERE n.user_id = ${user.timelineId} ${query.unread ? sql`AND n.read_at IS NULL` : sql``}
       ORDER BY n.created_at DESC LIMIT ${query.limit ?? 50}`;
@@ -326,7 +327,7 @@ route(
       unread: await unreadCount(user.timelineId),
       items: rows.map((n) => ({
         id: n.id, type: n.type, title: n.title, body: n.body, postId: n.post_id, readAt: n.read_at, createdAt: n.created_at,
-        actor: n.actor_id ? { id: n.actor_id, name: n.actor_name, kind: n.actor_kind, color: n.actor_color } : null,
+        actor: n.actor_id ? { id: n.actor_id, name: n.actor_name, kind: n.actor_kind, color: n.actor_color, avatarUrl: avatarUrl(n.actor_id, n.actor_avatar_v) } : null,
       })),
     };
   },

@@ -24,7 +24,7 @@ export default function Admin() {
         ) : (
           users.data.map((u) => (
             <div key={u.id} className={`flex flex-wrap items-center gap-3 border-t border-line py-2.5 first:border-0 ${u.disabled ? 'opacity-50' : ''}`}>
-              <Avatar name={u.name} color={u.color} size={34} />
+              <Avatar name={u.name} color={u.color} src={u.avatarUrl} size={34} />
               <div className="min-w-40 flex-1">
                 <div className="font-semibold">
                   {u.name} {u.role === 'admin' && <span className="ml-1 rounded-sm bg-accent-soft px-2 py-0.5 text-[11px] text-accent-text">admin</span>}

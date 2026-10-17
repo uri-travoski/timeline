@@ -2,7 +2,10 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Bot, Loader2, X } from 'lucide-react';
 
-export function Avatar({ name, color, kind, size = 38 }: { name: string; color: string; kind?: 'human' | 'agent'; size?: number }) {
+export function Avatar({ name, color, kind, size = 38, src }: { name: string; color: string; kind?: 'human' | 'agent'; size?: number; src?: string | null }) {
+  const [broken, setBroken] = useState(false);
+  if (src && !broken)
+    return <img src={src} alt="" width={size} height={size} onError={() => setBroken(true)} className="shrink-0 rounded-full bg-raised object-cover" style={{ width: size, height: size }} />;
   return (
     <div
       className="grid shrink-0 place-items-center rounded-full font-bold text-white"

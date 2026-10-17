@@ -69,6 +69,31 @@ export default function SettingsScreen() {
           </View>
         </Card>
 
+        {(me?.timelines.length ?? 0) > 1 && (
+          <Card>
+            <T bold size={16} style={{ marginBottom: 2 }}>Timelines</T>
+            <T muted size={12.5}>Whose posts the timeline and Reels show.</T>
+            {[
+              { id: 'me', label: 'Only mine', hint: 'Your posts and your AI agents’ posts.' },
+              ...me!.timelines.filter((x) => !x.mine).map((x) => ({ id: x.id, label: `${x.name} only`, hint: `${x.name}’s timeline.` })),
+              { id: 'all', label: me!.timelines.length === 2 ? `Me + ${me!.timelines.find((x) => !x.mine)!.name}` : 'Everyone combined', hint: 'Both timelines merged.' },
+            ].map((o) => {
+              const on = (s.timelineView ?? 'me') === o.id;
+              return (
+                <Pressable key={o.id} onPress={() => save({ timelineView: o.id })} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 9 }}>
+                  <View style={{ width: 22, height: 22, borderRadius: 11, borderWidth: 2, borderColor: on ? t.accent : t.line, alignItems: 'center', justifyContent: 'center' }}>
+                    {on && <Check size={13} color={t.accent} strokeWidth={3} />}
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <T>{o.label}</T>
+                    <T muted size={12.5}>{o.hint}</T>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </Card>
+        )}
+
         <Card>
           <T bold size={16} style={{ marginBottom: 6 }}>Reading</T>
           {(['auto', 'manual'] as const).map((m) => (

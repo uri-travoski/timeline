@@ -166,7 +166,7 @@ export const PostCard = memo(function PostCard({ post, expanded, manualRead }: {
     <View style={{ backgroundColor: t.card, paddingVertical: 12, borderTopWidth: StyleSheet.hairlineWidth, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: t.line }}>
       {!post.isRead && <View style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, backgroundColor: t.accent }} />}
       <Row gap={10} style={{ alignItems: 'center', paddingHorizontal: PAD }}>
-        <Avatar name={a.name} color={a.color} kind={a.kind} size={36} />
+        <Avatar name={a.name} color={a.color} src={a.avatarUrl} kind={a.kind} size={36} />
         <View style={{ flex: 1 }}>
           <Row gap={6}>
             <T bold size={14.5} numberOfLines={1} style={{ flexShrink: 1 }}>{a.name}</T>

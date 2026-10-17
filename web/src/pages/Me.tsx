@@ -21,7 +21,7 @@ export default function Me() {
     <div className="mx-auto max-w-[720px] px-3 pt-4">
       {me && (
         <div className="mb-4 flex items-center gap-3 rounded-3xl border border-line bg-card p-4">
-          <Avatar name={me.user.name} color={me.user.color} size={52} />
+          <Avatar name={me.user.name} color={me.user.color} src={me.user.avatarUrl} size={52} />
           <div>
             <div className="text-lg font-bold">{me.user.name}</div>
             <div className="text-sm text-muted">{me.user.email}</div>

@@ -40,6 +40,7 @@ export interface Author {
   name: string;
   kind: 'human' | 'agent';
   color: string;
+  avatarUrl?: string | null;
   ownerName?: string | null;
 }
 
@@ -85,6 +86,7 @@ export interface Settings {
   push: { agent_post: boolean; reminder: boolean; comment: boolean; share: boolean };
   reelsMuted: boolean;
   dataSaver: boolean;
+  timelineView?: string;
   defaultBackendId?: string | null;
 }
 
@@ -95,6 +97,7 @@ export interface User {
   name: string;
   email: string | null;
   color: string;
+  avatarUrl?: string | null;
   description: string;
   disabled: boolean;
   createdAt: string;
@@ -116,7 +119,7 @@ export interface Notification {
   postId: string | null;
   readAt: string | null;
   createdAt: string;
-  actor: { id: string; name: string; kind: 'human' | 'agent'; color: string } | null;
+  actor: { id: string; name: string; kind: 'human' | 'agent'; color: string; avatarUrl?: string | null } | null;
 }
 
 export interface Reminder {
@@ -167,6 +170,14 @@ export const api = {
 };
 
 /** Upload one file as a raw body (streams on the server; works for multi-GB videos), with progress. */
+/** Sets the signed-in user's profile picture (any image; the server crops it to a square). */
+export async function uploadAvatar(file: File): Promise<string | null> {
+  const r = await fetch('/api/me/avatar', { method: 'PUT', credentials: 'include', headers: { 'content-type': file.type || 'application/octet-stream' }, body: file });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok) throw new ApiError(r.status, data.error ?? 'Upload failed');
+  return data.avatarUrl ?? null;
+}
+
 export function uploadFile(file: File, opts: { backendId?: string; onProgress?: (fraction: number) => void; signal?: AbortSignal } = {}): Promise<Attachment> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();

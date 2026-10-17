@@ -40,7 +40,7 @@ export default function PostScreen() {
           {post.isLoading ? <Loading /> : post.isError ? <Empty title="Post not found">It may have been deleted.</Empty> : <PostCard post={{ ...post.data!, isRead: true }} expanded />}
           {comments.data?.map((c) => (
             <Row key={c.id} style={{ alignItems: 'flex-start', paddingHorizontal: 14 }} gap={10}>
-              <Avatar name={c.author.name} color={c.author.color} kind={c.author.kind} size={32} />
+              <Avatar name={c.author.name} color={c.author.color} src={c.author.avatarUrl} kind={c.author.kind} size={32} />
               <View style={{ flex: 1, backgroundColor: t.raised, borderRadius: 5, padding: 10 }}>
                 <Row gap={6}>
                   <T bold size={13.5}>{c.author.name}</T>

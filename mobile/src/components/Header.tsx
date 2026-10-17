@@ -22,30 +22,6 @@ export function BellButton() {
   );
 }
 
-export function TimelineSwitcher() {
-  const t = useTheme();
-  const me = useMe().data;
-  const [filters, setFilters] = useFilters();
-  if (!me || me.timelines.length < 2) return null;
-  const own = me.timelines[0].id;
-  const sel = filters.timelines ?? [own];
-  const options = [
-    ...me.timelines.map((x) => ({ key: x.id, label: x.mine ? 'Me' : x.name, color: x.color, value: x.mine ? undefined : [x.id] })),
-    { key: 'all', label: me.timelines.length === 2 ? `Me + ${me.timelines[1].name}` : 'Combined', color: '', value: ['all'] },
-  ];
-  const on = (k: string) => (k === 'all' ? sel[0] === 'all' : sel.length === 1 && sel[0] === k && sel[0] !== 'all');
-  return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }} contentContainerStyle={{ gap: 4, padding: 4, backgroundColor: t.card, borderRadius: 7, borderWidth: 1, borderColor: t.line }}>
-      {options.map((o) => (
-        <Pressable key={o.key} onPress={() => setFilters({ ...filters, timelines: o.value })} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 5, backgroundColor: on(o.key) ? t.raised : 'transparent' }}>
-          {!!o.color && <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: o.color }} />}
-          <T size={13.5} bold={on(o.key)} muted={!on(o.key)}>{o.label}</T>
-        </Pressable>
-      ))}
-    </ScrollView>
-  );
-}
-
 export function FeedHeader({ onHome }: { onHome?: () => void }) {
   const t = useTheme();
   const insets = useSafeAreaInsets();
@@ -85,7 +61,6 @@ export function FeedHeader({ onHome }: { onHome?: () => void }) {
         )}
         <BellButton />
       </View>
-      <TimelineSwitcher />
     </View>
   );
 }
