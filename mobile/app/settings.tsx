@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Alert, Platform, Pressable, ScrollView, Switch, View } from 'react-native';
+import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, Switch, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -110,11 +110,27 @@ export default function SettingsScreen() {
   const { install } = useLocalSearchParams<{ install?: string }>();
   const t = useTheme();
   const qc = useQueryClient();
-  const me = useMe().data;
+  const meQ = useMe();
+  const me = meQ.data;
   const storage = useQuery({ queryKey: ['storage'], queryFn: () => api.get<any>('/storage') });
   const shares = useQuery({ queryKey: ['shares'], queryFn: () => api.get<any>('/shares') });
-  if (!me) return null;
-  const s = me.user.settings;
+  if (!me)
+    return (
+      <Screen title="Settings" back>
+        <View style={{ padding: 24, gap: 12 }}>
+          {meQ.isError ? (
+            <>
+              <T muted>Couldn’t load your settings: {(meQ.error as Error)?.message}</T>
+              <Button title="Try again" onPress={() => void meQ.refetch()} />
+            </>
+          ) : (
+            <ActivityIndicator color={t.accent} />
+          )}
+        </View>
+      </Screen>
+    );
+  const s = { ...me.user.settings, push: me.user.settings?.push ?? { agent_post: true, reminder: true, comment: true, share: true } };
+  const timelines = me.timelines ?? [];
   const save = async (patch: Partial<Settings>) => {
     qc.setQueryData(['me'], (old: any) => old && { ...old, user: { ...old.user, settings: { ...old.user.settings, ...patch, push: { ...old.user.settings.push, ...(patch.push ?? {}) } } } });
     await api.patch('/me', { settings: patch }).catch((e) => Alert.alert('Error', e.message));
@@ -130,7 +146,7 @@ export default function SettingsScreen() {
       Alert.alert('Google Drive', (e as Error).message);
     }
   };
-  const hasDrive = storage.data?.backends.some((b: any) => b.type === 'gdrive' && !b.shared);
+  const hasDrive = storage.data?.backends?.some((b: any) => b.type === 'gdrive' && !b.shared);
 
   return (
     <Screen title="Settings" back>
@@ -154,14 +170,14 @@ export default function SettingsScreen() {
           </View>
         </Card>
 
-        {(me?.timelines.length ?? 0) > 1 && (
+        {timelines.length > 1 && (
           <Card>
             <T bold size={16} style={{ marginBottom: 2 }}>Timelines</T>
             <T muted size={12.5}>Whose posts the timeline and Reels show.</T>
             {[
               { id: 'me', label: 'Only mine', hint: 'Your posts and your AI agents’ posts.' },
-              ...me!.timelines.filter((x) => !x.mine).map((x) => ({ id: x.id, label: `${x.name} only`, hint: `${x.name}’s timeline.` })),
-              { id: 'all', label: me!.timelines.length === 2 ? `Me + ${me!.timelines.find((x) => !x.mine)!.name}` : 'Everyone combined', hint: 'Both timelines merged.' },
+              ...timelines.filter((x) => !x.mine).map((x) => ({ id: x.id, label: `${x.name} only`, hint: `${x.name}’s timeline.` })),
+              { id: 'all', label: timelines.length === 2 ? `Me + ${timelines.find((x) => !x.mine)!.name}` : 'Everyone combined', hint: 'Both timelines merged.' },
             ].map((o) => {
               const on = (s.timelineView ?? 'me') === o.id;
               return (
@@ -210,7 +226,7 @@ export default function SettingsScreen() {
 
         <Card>
           <T bold size={16} style={{ marginBottom: 6 }}>Storage</T>
-          {storage.data?.backends.map((b: any) => (
+          {storage.data?.backends?.map((b: any) => (
             <Row key={b.id} style={{ paddingVertical: 8 }} gap={10}>
               {b.type === 'gdrive' ? <Cloud size={20} color={t.muted} /> : b.type === 's3' ? <Database size={20} color={t.muted} /> : <HardDrive size={20} color={t.muted} />}
               <View style={{ flex: 1 }}>
@@ -226,10 +242,10 @@ export default function SettingsScreen() {
           {storage.data && !storage.data.googleConfigured && <T muted size={12} style={{ marginTop: 6 }}>Google Drive isn't enabled on the server yet (admin: see README).</T>}
         </Card>
 
-        {!!shares.data?.incoming.filter((x: any) => x.status === 'pending').length && (
+        {!!shares.data?.incoming?.filter((x: any) => x.status === 'pending').length && (
           <Card>
             <T bold size={16} style={{ marginBottom: 6 }}>Shared with you</T>
-            {shares.data.incoming.filter((x: any) => x.status === 'pending').map((x: any) => (
+            {shares.data.incoming?.filter((x: any) => x.status === 'pending').map((x: any) => (
               <Row key={x.ownerId} style={{ paddingVertical: 6 }}>
                 <T style={{ flex: 1 }}>{x.user.name} wants to share their timeline</T>
                 <Button title="Accept" kind="primary" onPress={async () => (await api.post(`/shares/${x.ownerId}/accept`), qc.invalidateQueries({ queryKey: ['shares'] }), qc.invalidateQueries({ queryKey: ['me'] }))} style={{ paddingVertical: 6 }} />
