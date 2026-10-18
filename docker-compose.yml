@@ -1,9 +1,10 @@
-# Timeline: self-hosted timeline. Start with:  docker compose up -d
+# Timeline: self-hosted timeline. Standalone: only this file is needed.  docker compose up -d
 # Then open http://<this-machine>:8080 (or your domain) and sign in with ADMIN_EMAIL / ADMIN_PASSWORD.
 services:
   app:
-    build: .
-    image: timeline:latest
+    # Prebuilt image from GitHub (built automatically for every release). Pin a version, e.g. :1.3.1, if you prefer.
+    image: ghcr.io/uri-travoski/timeline:latest
+    pull_policy: always
     restart: unless-stopped
     depends_on:
       db:

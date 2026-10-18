@@ -30,6 +30,7 @@ Requirements: Docker with Compose.
 
 ```bash
 git clone <this repo> timeline && cd timeline
+# (no clone needed: this one file is enough; the image is pulled from ghcr.io/uri-travoski/timeline)
 nano docker-compose.yml        # set PUBLIC_URL, APP_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD, DB password
 docker compose up -d
 ```
