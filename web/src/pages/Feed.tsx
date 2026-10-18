@@ -1,10 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { useWindowVirtualizer } from '@tanstack/react-virtual';
-import { Clapperboard, Inbox, SlidersHorizontal } from 'lucide-react';
+import { Inbox, SlidersHorizontal } from 'lucide-react';
 import { api, filtersToQuery, type Page, type Post } from '../lib/api';
-import { countActiveFilters, useCategories, useFilters, useMe } from '../lib/hooks';
+import { countActiveFilters, useFilters, useMe } from '../lib/hooks';
 import { PostCard } from '../components/PostCard';
 import { FilterPanel } from '../components/Filters';
 import { Empty, Modal, Spinner } from '../components/ui';
@@ -22,10 +21,7 @@ export function usePostsQuery(filters: ReturnType<typeof useFilters>[0]) {
 
 export default function Feed() {
   const [filters, set, clear] = useFilters();
-  const [params] = useSearchParams();
-  const nav = useNavigate();
   const me = useMe().data;
-  const cats = useCategories().data ?? [];
   const [sheet, setSheet] = useState(false);
   const q = usePostsQuery(filters);
   const posts = q.data?.pages.flatMap((p) => p.items) ?? [];
@@ -45,33 +41,14 @@ export default function Feed() {
     if (last && last.index >= posts.length - 1 && q.hasNextPage && !q.isFetchingNextPage) q.fetchNextPage();
   }, [items, posts.length, q.hasNextPage, q.isFetchingNextPage]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const catNames = [...new Map(cats.map((c) => [c.name.toLowerCase(), c])).values()];
   const active = countActiveFilters(filters);
-  const onlyCat = (name?: string) => set({ categories: name ? [name] : undefined });
-  const isCat = (name: string) => filters.categories?.some((c) => c.toLowerCase() === name.toLowerCase());
 
   return (
     <div className="flex">
       <div className="mx-auto w-full min-w-0 max-w-[720px] px-3 pt-4 sm:px-5">
-        <div className="mb-4 flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-          <button className="chip xl:hidden" data-on={active > 0} onClick={() => setSheet(true)}>
+        <div className="mb-3 flex justify-end xl:hidden">
+          <button className="chip" data-on={active > 0} onClick={() => setSheet(true)}>
             <SlidersHorizontal size={14} /> Filters{active ? ` · ${active}` : ''}
-          </button>
-          <button className="chip font-semibold" data-on={!filters.categories?.length} onClick={() => onlyCat()}>
-            All
-          </button>
-          {catNames.map((c) => (
-            <button key={c.id} className="chip" data-on={!!isCat(c.name)} onClick={() => set({ categories: isCat(c.name) ? filters.categories!.filter((x) => x.toLowerCase() !== c.name.toLowerCase()) : [...(filters.categories ?? []), c.name] })}>
-              <span className="h-2 w-2 rounded-full" style={{ background: c.color }} />
-              {c.name}
-            </button>
-          ))}
-          <div className="flex-1" />
-          <button className="chip" data-on={!!filters.unread} onClick={() => set({ unread: !filters.unread })}>
-            Unread only
-          </button>
-          <button className="chip" onClick={() => nav(`/reels?${params.toString()}`)}>
-            <Clapperboard size={14} /> Videos only
           </button>
         </div>
 

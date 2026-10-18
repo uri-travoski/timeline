@@ -1,11 +1,12 @@
-import { Image, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Bell, Search, X } from 'lucide-react-native';
+import { Bell, Search, SlidersHorizontal, X } from 'lucide-react-native';
 import { useState } from 'react';
-import { useFilters, useMe, useUnread } from '../state';
+import { activeFilterCount, useFilters, useMe, useUnread } from '../state';
 import { useTheme } from '../theme';
 import { T } from './ui';
+import { FilterSheet } from './FilterSheet';
 
 export function BellButton() {
   const t = useTheme();
@@ -28,6 +29,8 @@ export function FeedHeader({ onHome }: { onHome?: () => void }) {
   const [filters, setFilters] = useFilters();
   const [searching, setSearching] = useState(!!filters.q);
   const [q, setQ] = useState(filters.q ?? '');
+  const [sheet, setSheet] = useState(false);
+  const active = activeFilterCount(filters);
   return (
     <View style={{ paddingTop: insets.top + 6, paddingHorizontal: 14, paddingBottom: 8, backgroundColor: t.bg, gap: 10 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
@@ -48,19 +51,22 @@ export function FeedHeader({ onHome }: { onHome?: () => void }) {
                 hitSlop={8}
                 accessibilityRole="button"
                 accessibilityLabel="Timeline home"
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
+                style={{ flexDirection: 'row', alignItems: 'center' }}
               >
-                <Image source={require('../../assets/icon.png')} style={{ width: 32, height: 32, borderRadius: 7 }} />
-                <T bold size={26} style={{ letterSpacing: -0.5 }}>Timeline</T>
+                <T bold size={25} style={{ letterSpacing: -0.5, fontWeight: '900' }}>Timeline</T>
               </Pressable>
             </View>
             <Pressable onPress={() => setSearching(true)} style={{ width: 42, height: 42, borderRadius: 7, backgroundColor: t.card, borderWidth: 1, borderColor: t.line, alignItems: 'center', justifyContent: 'center' }} accessibilityLabel="Search">
               <Search color={t.text} size={20} />
             </Pressable>
+            <Pressable onPress={() => setSheet(true)} style={{ width: 42, height: 42, borderRadius: 7, backgroundColor: active ? t.accent : t.card, borderWidth: 1, borderColor: t.line, alignItems: 'center', justifyContent: 'center' }} accessibilityLabel={active ? `Filters, ${active} active` : 'Filters'}>
+              <SlidersHorizontal color={active ? '#fff' : t.text} size={20} />
+            </Pressable>
           </>
         )}
         <BellButton />
       </View>
+      <FilterSheet open={sheet} onClose={() => setSheet(false)} />
     </View>
   );
 }

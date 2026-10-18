@@ -8,7 +8,7 @@ const config: ExpoConfig = {
   name: 'Timeline',
   slug: 'timeline',
   scheme: 'timeline',
-  version: '1.3.1',
+  version: '1.3.2',
   orientation: 'default',
   icon: './assets/icon.png',
   userInterfaceStyle: 'automatic',
@@ -16,7 +16,7 @@ const config: ExpoConfig = {
   splash: { image: './assets/splash-icon.png', resizeMode: 'contain', backgroundColor: '#000000' },
   android: {
     package: 'app.timeline.mobile',
-    versionCode: 131,
+    versionCode: 132,
     adaptiveIcon: { foregroundImage: './assets/adaptive-icon.png', backgroundImage: './assets/adaptive-bg.png', monochromeImage: './assets/adaptive-icon.png' },
     permissions: ['POST_NOTIFICATIONS', 'READ_MEDIA_IMAGES', 'READ_MEDIA_VIDEO', 'CAMERA', 'REQUEST_INSTALL_PACKAGES'],
     ...(hasFirebase ? { googleServicesFile: './google-services.json' } : {}),

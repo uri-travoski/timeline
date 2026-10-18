@@ -153,7 +153,11 @@ export function Layout() {
           <HomeLink className="flex shrink-0 items-center lg:hidden">
             <Logo size={28} />
           </HomeLink>
-          <SearchBox className="min-w-0 flex-1" />
+          {/* On desktop the search sits in the same centred column as the posts (the feed reserves 300px on the right for its filter panel). */}
+          <div className={`min-w-0 flex-1 lg:pointer-events-none lg:absolute lg:inset-y-0 lg:left-0 lg:right-0 lg:flex lg:items-center lg:px-7 ${loc.pathname === '/' ? 'xl:pr-[calc(1.75rem+300px)]' : ''}`}>
+            <SearchBox className="mx-auto w-full max-w-[680px] lg:pointer-events-auto" />
+          </div>
+          <div className="hidden flex-1 lg:block" />
           <BellButton />
           <button className="btn btn-primary hidden sm:inline-flex" onClick={() => composer.open()}>
             <Plus size={18} /> New post
