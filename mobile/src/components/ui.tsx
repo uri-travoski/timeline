@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
-import { ActivityIndicator, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View, type PressableProps, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import { ActivityIndicator, Image, Modal, Pressable, ScrollView, StyleSheet, View, type PressableProps, type StyleProp, type TextStyle, type ViewStyle } from 'react-native';
+import { Text } from '../text';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Bot, X } from 'lucide-react-native';
 import { abs } from '../api';
@@ -60,7 +61,7 @@ export function Button({ title, onPress, kind = 'default', icon, disabled, loadi
       style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingHorizontal: 16, paddingVertical: 11, borderRadius: 7, backgroundColor: bg, opacity: disabled ? 0.5 : pressed ? 0.8 : 1, borderWidth: kind === 'default' ? 1 : 0, borderColor: t.line }, style]}
     >
       {loading ? <ActivityIndicator color={fg} /> : icon}
-      <Text style={{ color: fg, fontWeight: '700', fontSize: 15 }}>{title}</Text>
+      {!!title && <Text style={{ color: fg, fontWeight: '700', fontSize: 15 }}>{title}</Text>}
     </Pressable>
   );
 }

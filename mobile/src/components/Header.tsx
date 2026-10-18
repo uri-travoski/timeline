@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
+import { Text, TextInput } from '../text';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Bell, Search, SlidersHorizontal, X } from 'lucide-react-native';
@@ -13,7 +14,7 @@ export function BellButton() {
   const unread = useUnread().data ?? 0;
   return (
     <Pressable onPress={() => router.push('/notifications')} style={{ width: 42, height: 42, borderRadius: 7, backgroundColor: t.card, borderWidth: 1, borderColor: t.line, alignItems: 'center', justifyContent: 'center' }} accessibilityLabel={`Notifications, ${unread} unread`}>
-      <Bell color={t.text} size={20} />
+      <Bell color={t.text} size={21} />
       {unread > 0 && (
         <View style={{ position: 'absolute', top: -4, right: -4, minWidth: 20, height: 20, borderRadius: 10, backgroundColor: t.danger, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4, borderWidth: 2, borderColor: t.bg }}>
           <Text style={{ color: '#fff', fontSize: 11, fontWeight: '800' }}>{unread > 99 ? '99+' : unread}</Text>
@@ -57,10 +58,10 @@ export function FeedHeader({ onHome }: { onHome?: () => void }) {
               </Pressable>
             </View>
             <Pressable onPress={() => setSearching(true)} style={{ width: 42, height: 42, borderRadius: 7, backgroundColor: t.card, borderWidth: 1, borderColor: t.line, alignItems: 'center', justifyContent: 'center' }} accessibilityLabel="Search">
-              <Search color={t.text} size={20} />
+              <Search color={t.text} size={21} />
             </Pressable>
             <Pressable onPress={() => setSheet(true)} style={{ width: 42, height: 42, borderRadius: 7, backgroundColor: active ? t.accent : t.card, borderWidth: 1, borderColor: t.line, alignItems: 'center', justifyContent: 'center' }} accessibilityLabel={active ? `Filters, ${active} active` : 'Filters'}>
-              <SlidersHorizontal color={active ? '#fff' : t.text} size={20} />
+              <SlidersHorizontal color={active ? '#fff' : t.text} size={21} />
             </Pressable>
           </>
         )}

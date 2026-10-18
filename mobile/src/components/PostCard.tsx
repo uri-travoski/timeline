@@ -1,5 +1,6 @@
 import { memo } from 'react';
-import { Alert, Linking, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { Alert, Linking, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Text } from '../text';
 import { router } from 'expo-router';
 import { useQueryClient } from '@tanstack/react-query';
 import { AlarmClock, Check, Clapperboard, Download, FileText, Link2, Lock, MessageCircle, MoreHorizontal, Music, Play } from 'lucide-react-native';

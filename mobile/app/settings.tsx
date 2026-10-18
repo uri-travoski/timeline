@@ -1,15 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Alert, Platform, Pressable, ScrollView, Switch, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Easing, Platform, Pressable, ScrollView, Switch, View } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Check, Cloud, Database, HardDrive } from 'lucide-react-native';
+import { Check, Cloud, Database, Download, HardDrive, Minus, Plus } from 'lucide-react-native';
 import { api, type Settings } from '../src/api';
 import { registerForPush } from '../src/push';
 import { bytes, useMe } from '../src/state';
 import { THEMES, THEME_NAMES, useTheme } from '../src/theme';
 import { Screen } from '../src/components/Screen';
 import { Button, Card, Row, T } from '../src/components/ui';
+import { MAX_TEXT_DELTA, MIN_TEXT_DELTA, setTextDelta, useTextDelta } from '../src/text';
 import { checkForUpdate, downloadAndInstall, installedVersion, type UpdateInfo } from '../src/updates';
 
 function Toggle({ label, hint, value, onChange }: { label: string; hint?: string; value: boolean; onChange: (v: boolean) => void }) {
@@ -32,6 +33,24 @@ function releaseNotes(md: string) {
     .filter((l) => l.trim().startsWith('- '))
     .map((l) => '• ' + l.trim().slice(2).replace(/\*\*|`/g, ''))
     .join('\n');
+}
+
+/** Big pulsing green button so a pending update is hard to miss. */
+function UpdateNowButton({ onPress, loading }: { onPress: () => void; loading: boolean }) {
+  const pulse = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    const loop = Animated.loop(Animated.sequence([
+      Animated.timing(pulse, { toValue: 1, duration: 800, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+      Animated.timing(pulse, { toValue: 0, duration: 800, easing: Easing.inOut(Easing.quad), useNativeDriver: true }),
+    ]));
+    loop.start();
+    return () => loop.stop();
+  }, [pulse]);
+  return (
+    <Animated.View style={{ flex: 1, transform: [{ scale: pulse.interpolate({ inputRange: [0, 1], outputRange: [1, 1.05] }) }], shadowColor: '#22c55e', shadowOpacity: 0.9, shadowRadius: 12, elevation: 10, opacity: pulse.interpolate({ inputRange: [0, 1], outputRange: [0.92, 1] }) }}>
+      <Button title="Download & install" loading={loading} onPress={onPress} icon={<Download size={18} color="#fff" />} style={{ backgroundColor: '#16a34a', paddingVertical: 14 }} />
+    </Animated.View>
+  );
 }
 
 function UpdateCard({ autoInstall }: { autoInstall: boolean }) {
@@ -100,7 +119,7 @@ function UpdateCard({ autoInstall }: { autoInstall: boolean }) {
       {!!error && <T style={{ marginTop: 8, color: t.danger }} size={13}>{error}</T>}
       <Row gap={8} style={{ marginTop: 10 }}>
         <Button title="Check for updates" loading={busy === 'check'} disabled={busy === 'download'} onPress={() => check(true)} style={{ flex: 1 }} />
-        {info?.updateAvailable && Platform.OS === 'android' && <Button title="Download & install" kind="primary" loading={busy === 'download'} onPress={() => install(info)} style={{ flex: 1 }} />}
+        {info?.updateAvailable && Platform.OS === 'android' && <UpdateNowButton loading={busy === 'download'} onPress={() => install(info)} />}
       </Row>
     </Card>
   );
@@ -110,6 +129,7 @@ export default function SettingsScreen() {
   const { install } = useLocalSearchParams<{ install?: string }>();
   const t = useTheme();
   const qc = useQueryClient();
+  const textDelta = useTextDelta();
   const meQ = useMe();
   const me = meQ.data;
   const storage = useQuery({ queryKey: ['storage'], queryFn: () => api.get<any>('/storage') });
@@ -168,6 +188,17 @@ export default function SettingsScreen() {
               );
             })}
           </View>
+        </Card>
+
+        <Card>
+          <T bold size={16} style={{ marginBottom: 2 }}>Text size</T>
+          <T muted size={12.5}>Makes all text in the app bigger or smaller, 1 px at a time.</T>
+          <Row gap={10} style={{ marginTop: 10 }}>
+            <Button title="" icon={<Minus size={20} color={t.text} />} disabled={textDelta <= MIN_TEXT_DELTA} onPress={() => setTextDelta(textDelta - 1)} style={{ width: 52 }} />
+            <T bold style={{ flex: 1, textAlign: 'center' }}>{textDelta === 0 ? 'Default' : `${textDelta > 0 ? '+' : ''}${textDelta} px`}</T>
+            <Button title="" icon={<Plus size={20} color={t.text} />} disabled={textDelta >= MAX_TEXT_DELTA} onPress={() => setTextDelta(textDelta + 1)} style={{ width: 52 }} />
+            <Button title="Reset" disabled={textDelta === 0} onPress={() => setTextDelta(0)} />
+          </Row>
         </Card>
 
         {timelines.length > 1 && (

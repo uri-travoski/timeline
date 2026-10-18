@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Pressable, TextInput, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import { TextInput } from '../text';
 import { useQuery } from '@tanstack/react-query';
 import { Check } from 'lucide-react-native';
 import { api, type Filters } from '../api';

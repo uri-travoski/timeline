@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, View } from 'react-native';
+import { Text, TextInput } from '../src/text';
 import { router, useLocalSearchParams } from 'expo-router';
 import { RemoteImage } from '../src/components/RemoteImage';
 import * as ImagePicker from 'expo-image-picker';

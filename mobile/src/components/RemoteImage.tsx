@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Image, StyleSheet, Text, type ImageStyle, type StyleProp } from 'react-native';
+import { Image, StyleSheet, type ImageStyle, type StyleProp } from 'react-native';
+import { Text } from '../text';
 
 /**
  * Remote (server) images. Uses React Native's built-in Image (Fresco on Android), which renders

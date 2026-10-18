@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Alert, FlatList, Pressable, RefreshControl, TextInput, View } from 'react-native';
+import { Alert, FlatList, Pressable, RefreshControl, View } from 'react-native';
+import { TextInput } from '../../src/text';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlarmClock, Plus, Repeat, Trash2 } from 'lucide-react-native';
 import { api, type Reminder } from '../../src/api';

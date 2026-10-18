@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { KeyboardAvoidingView, Platform, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, View } from 'react-native';
+import { TextInput } from './text';
 import { Image } from 'expo-image';
 import { StatusBar } from 'expo-status-bar';
 import { api, session } from './api';
