@@ -9,7 +9,7 @@ import { TaskItem, TaskList } from '@tiptap/extension-list';
 import { Markdown } from 'tiptap-markdown';
 import markPlugin from 'markdown-it-mark';
 import insPlugin from 'markdown-it-ins';
-import { Bold, Check, Heading1, Heading2, Heading3, Highlighter, Italic, Link2, List, ListChecks, ListOrdered, Pilcrow, Underline as UnderlineIcon, X } from 'lucide-react';
+import { Bold, Check, ChevronDown, Heading1, Heading2, Heading3, Highlighter, Italic, Link2, List, ListChecks, ListOrdered, Pilcrow, Underline as UnderlineIcon, X } from 'lucide-react';
 import type { DOMProps } from 'expo/dom';
 
 // Runs inside a web view (Expo DOM component) so the phone gets the same editor as the web app.
@@ -53,6 +53,41 @@ function Btn({ on, label, onPress, children, colors }: { on?: boolean; label: st
   );
 }
 
+interface Option { label: string; icon: ReactNode; on: boolean; run: () => void }
+
+/** Toolbar dropdown: shows the active option's icon and opens a small menu without closing the keyboard. */
+function Drop({ label, options, fallback, colors, alignRight }: { label: string; options: Option[]; fallback: ReactNode; colors: EditorColors; alignRight?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const close = (e: PointerEvent) => !ref.current?.contains(e.target as Node) && setOpen(false);
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, [open]);
+  const active = options.find((o) => o.on);
+  return (
+    <div ref={ref} style={{ position: 'relative', flexShrink: 0 }}>
+      <button type="button" aria-label={label} aria-haspopup="menu" aria-expanded={open} onMouseDown={(e) => e.preventDefault()} onClick={() => setOpen(!open)}
+        style={{ height: 38, display: 'flex', alignItems: 'center', gap: 1, padding: '0 4px 0 7px', border: 0, borderRadius: 7, background: open ? colors.raised : 'transparent', color: colors.text }}>
+        {active?.icon ?? fallback}
+        <ChevronDown size={14} color={colors.muted} />
+      </button>
+      {open && (
+        <div role="menu" style={{ position: 'absolute', ...(alignRight ? { right: 0 } : { left: 0 }), top: '100%', marginTop: 4, zIndex: 5, minWidth: 190, background: colors.card, border: `1px solid ${colors.line}`, borderRadius: 10, padding: 4, boxShadow: '0 8px 24px rgba(0,0,0,.18)' }}>
+          {options.map((o) => (
+            <button key={o.label} type="button" role="menuitem" onMouseDown={(e) => e.preventDefault()} onClick={() => (o.run(), setOpen(false))}
+              style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 10, padding: '9px 10px', border: 0, borderRadius: 7, background: o.on ? colors.raised : 'transparent', color: colors.text, fontSize: 16, fontWeight: o.on ? 700 : 400, textAlign: 'left' }}>
+              <span style={{ width: 22, display: 'grid', placeItems: 'center', color: colors.muted }}>{o.icon}</span>
+              {o.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Toolbar({ editor, colors }: { editor: Editor; colors: EditorColors }) {
   const s = useEditorState({
     editor,
@@ -66,7 +101,7 @@ function Toolbar({ editor, colors }: { editor: Editor; colors: EditorColors }) {
   const [linking, setLinking] = useState<string | null>(null);
   const c = () => editor.chain().focus();
   const sep = <span style={{ width: 1, height: 22, background: colors.line, flexShrink: 0, margin: '0 3px' }} />;
-  const bar = { display: 'flex', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', alignItems: 'center', gap: 2, padding: '4px 6px', borderBottom: `1px solid ${colors.line}`, position: 'sticky', top: 0, background: colors.card, zIndex: 1 } as const;
+  const bar = { display: 'flex', minWidth: 0, maxWidth: '100%', boxSizing: 'border-box', alignItems: 'center', gap: 2, padding: '4px 6px', borderBottom: `1px solid ${colors.line}`, position: 'sticky', top: 0, background: colors.card, zIndex: 1, borderRadius: '10px 10px 0 0' } as const;
   const applyLink = () => {
     const url = (linking ?? '').trim();
     if (!url) c().extendMarkRange('link').unsetLink().run();
@@ -91,20 +126,35 @@ function Toolbar({ editor, colors }: { editor: Editor; colors: EditorColors }) {
       </div>
     );
   return (
-    <div style={{ ...bar, overflowX: 'auto', scrollbarWidth: 'none' }}>
-      <Btn label="Text" on={s.p} onPress={() => c().setParagraph().run()} colors={colors}><Pilcrow size={19} /></Btn>
-      <Btn label="Heading 1" on={s.h1} onPress={() => c().toggleHeading({ level: 1 }).run()} colors={colors}><Heading1 size={21} /></Btn>
-      <Btn label="Heading 2" on={s.h2} onPress={() => c().toggleHeading({ level: 2 }).run()} colors={colors}><Heading2 size={21} /></Btn>
-      <Btn label="Heading 3" on={s.h3} onPress={() => c().toggleHeading({ level: 3 }).run()} colors={colors}><Heading3 size={21} /></Btn>
+    <div style={bar}>
+      <Drop
+        label="Text style"
+        fallback={<Pilcrow size={19} />}
+        colors={colors}
+        options={[
+          { label: 'Text', icon: <Pilcrow size={19} />, on: s.p, run: () => c().setParagraph().run() },
+          { label: 'Heading 1', icon: <Heading1 size={21} />, on: s.h1, run: () => c().toggleHeading({ level: 1 }).run() },
+          { label: 'Heading 2', icon: <Heading2 size={21} />, on: s.h2, run: () => c().toggleHeading({ level: 2 }).run() },
+          { label: 'Heading 3', icon: <Heading3 size={21} />, on: s.h3, run: () => c().toggleHeading({ level: 3 }).run() },
+        ]}
+      />
       {sep}
       <Btn label="Bold" on={s.b} onPress={() => c().toggleBold().run()} colors={colors}><Bold size={19} /></Btn>
       <Btn label="Italic" on={s.i} onPress={() => c().toggleItalic().run()} colors={colors}><Italic size={19} /></Btn>
       <Btn label="Underline" on={s.u} onPress={() => c().toggleUnderline().run()} colors={colors}><UnderlineIcon size={19} /></Btn>
       <Btn label="Highlight" on={s.hl} onPress={() => c().toggleHighlight().run()} colors={colors}><Highlighter size={19} /></Btn>
       {sep}
-      <Btn label="Bulleted list" on={s.ul} onPress={() => c().toggleBulletList().run()} colors={colors}><List size={20} /></Btn>
-      <Btn label="Numbered list" on={s.ol} onPress={() => c().toggleOrderedList().run()} colors={colors}><ListOrdered size={20} /></Btn>
-      <Btn label="Checklist" on={s.tl} onPress={() => c().toggleTaskList().run()} colors={colors}><ListChecks size={20} /></Btn>
+      <Drop
+        label="Lists"
+        alignRight
+        fallback={<List size={20} />}
+        colors={colors}
+        options={[
+          { label: 'Bulleted list', icon: <List size={20} />, on: s.ul, run: () => c().toggleBulletList().run() },
+          { label: 'Numbered list', icon: <ListOrdered size={20} />, on: s.ol, run: () => c().toggleOrderedList().run() },
+          { label: 'Checklist', icon: <ListChecks size={20} />, on: s.tl, run: () => c().toggleTaskList().run() },
+        ]}
+      />
       {sep}
       <Btn label="Link" on={s.link} onPress={() => setLinking(editor.getAttributes('link').href ?? '')} colors={colors}><Link2 size={19} /></Btn>
     </div>
@@ -182,7 +232,7 @@ export default function RichEditor({ initial, placeholder, colors, fontSize, aut
   `;
   if (!editor) return null;
   return (
-    <div ref={box} style={{ border: `1px solid ${colors.line}`, borderRadius: 10, overflow: 'hidden', background: colors.card, width: '100%', boxSizing: 'border-box' }}>
+    <div ref={box} style={{ border: `1px solid ${colors.line}`, borderRadius: 10, background: colors.card, width: '100%', boxSizing: 'border-box' }}>
       <style>{css}</style>
       <Toolbar editor={editor} colors={colors} />
       <EditorContent editor={editor} />

@@ -49,7 +49,7 @@ app.get('/api/openapi.json', (c) =>
       openapi: '3.1.0',
       info: {
         title: 'Timeline API',
-        version: '1.3.6',
+        version: '1.3.7',
         description:
           'Self-hosted timeline. Create an AI agent under Settings → AI agents to get an API key, then send it as `Authorization: Bearer tlk_...`. ' +
           'Upload files with `PUT /api/uploads?filename=x.mp4` (raw body), then reference the returned id in `attachmentIds` when creating a post. ' +
