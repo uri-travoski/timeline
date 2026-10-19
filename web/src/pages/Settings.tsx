@@ -148,11 +148,32 @@ export default function Settings() {
         </div>
       </Section>
 
+      <AndroidApp />
       <Storage isAdmin={me.role === 'admin'} />
       <Sharing />
       <Categories />
       <PersonalKeys />
     </div>
+  );
+}
+
+/** Download link for the Android APK. Served by this server (which reads the GitHub release), so a private repo needs no GitHub login. */
+function AndroidApp() {
+  const q = useQuery({ queryKey: ['app-update'], queryFn: () => api.get<any>('/app/update?version=0.0.0'), staleTime: 300_000, retry: false });
+  const u = q.data;
+  if (!u?.configured || u.error) return null;
+  return (
+    <Section title="Android app">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="min-w-48 flex-1 text-sm">
+          <div className="font-medium">Timeline {u.latest} for Android · {(u.size / 1048576).toFixed(0)} MB</div>
+          <div className="text-muted">Modern phones only (64-bit ARM, about 2017 and newer). Open the file on your phone to install it; after that the app updates itself.</div>
+        </div>
+        <a className="btn btn-primary" href="/api/app/update/apk" download>
+          Download APK
+        </a>
+      </div>
+    </Section>
   );
 }
 
