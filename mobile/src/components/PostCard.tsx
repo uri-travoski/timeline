@@ -9,6 +9,7 @@ import { SOURCE_LABEL, bytes, markRead, setRead, timeAgo } from '../state';
 import { GOLD, GOLD_TINT, useTheme } from '../theme';
 import { AgentBadge, Avatar, Row, T } from './ui';
 import { RemoteImage } from './RemoteImage';
+import { Markdown, stripMarkdown } from './Markdown';
 
 function duration(s: number | null) {
   if (!s) return '';
@@ -43,7 +44,7 @@ export function ReminderCard({ post }: { post: Post }) {
       </View>
       <Pressable style={{ flex: 1 }} onPress={() => post.refPost && router.push(`/post/${post.refPost.id}`)}>
         <T bold>{post.title}</T>
-        {!!post.body && <T muted size={13}>{post.body}</T>}
+        {!!post.body && <T muted size={13}>{stripMarkdown(post.body)}</T>}
         <Text style={{ color: '#d4a420', fontSize: 11.5 }}>
           Reminder{post.author?.kind === 'agent' ? ` · ${post.author.name}` : ''} · {timeAgo(post.postedAt)}
           {post.refPost ? ` · about “${(post.refPost.title || post.refPost.snippet).slice(0, 30)}”` : ''}
@@ -187,9 +188,9 @@ export const PostCard = memo(function PostCard({ post, expanded, manualRead }: {
       <Pressable onPress={() => !expanded && router.push(`/post/${post.id}`)} style={{ paddingHorizontal: PAD }}>
         {!!post.title && <T bold size={17} style={{ marginTop: 10, lineHeight: 23 }}>{post.title}</T>}
         {!!post.body && (
-          <T size={16} style={{ marginTop: post.title ? 4 : 10, lineHeight: 23 }} numberOfLines={expanded ? undefined : 10}>
-            {post.body}
-          </T>
+          <View style={{ marginTop: post.title ? 4 : 10 }}>
+            <Markdown source={post.body} maxHeight={expanded ? undefined : 280} onMore={() => router.push(`/post/${post.id}`)} />
+          </View>
         )}
         {post.tags.length > 0 && <T size={13.5} style={{ marginTop: 6, color: t.accentText }}>{post.tags.map((x) => `#${x}`).join('  ')}</T>}
       </Pressable>

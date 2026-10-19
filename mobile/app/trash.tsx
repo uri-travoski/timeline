@@ -7,6 +7,7 @@ import { timeAgo, useMe } from '../src/state';
 import { useTheme } from '../src/theme';
 import { Screen } from '../src/components/Screen';
 import { Button, Empty, Loading, Row, T } from '../src/components/ui';
+import { stripMarkdown } from '../src/components/Markdown';
 
 export default function Trash() {
   const t = useTheme();
@@ -32,7 +33,7 @@ export default function Trash() {
             <Row style={{ padding: 12, borderRadius: 7, backgroundColor: t.card, borderWidth: 1, borderColor: t.line }} gap={10}>
               <RemoteImage uri={abs(p.attachments[0]?.thumbUrl)} style={{ width: 48, height: 48, borderRadius: 5 }} />
               <View style={{ flex: 1 }}>
-                <T numberOfLines={2}>{p.title || p.body || '(no text)'}</T>
+                <T numberOfLines={2}>{p.title || stripMarkdown(p.body) || '(no text)'}</T>
                 <T muted size={12}>deleted {timeAgo(p.deletedAt!)} · {p.attachments.length} file(s)</T>
               </View>
               <Button title="Restore" onPress={async () => (await api.post(`/trash/post/${p.id}/restore`), refresh())} style={{ paddingVertical: 6 }} />

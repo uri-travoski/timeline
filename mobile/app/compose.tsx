@@ -12,6 +12,8 @@ import { abs, api, uploadFile, type Attachment, type Post } from '../src/api';
 import { useCategories, useTags } from '../src/state';
 import { useTheme } from '../src/theme';
 import { Button, Chip, Row, T } from '../src/components/ui';
+import RichEditor from '../src/components/RichEditor.dom';
+import { useTextDelta } from '../src/text';
 
 interface Up {
   key: string;
@@ -32,6 +34,8 @@ export default function Compose() {
   const cats = (useCategories().data ?? []).filter((c) => c.mine);
   const allTags = useTags().data ?? [];
   const [body, setBody] = useState('');
+  const textDelta = useTextDelta();
+  const [editorHeight, setEditorHeight] = useState(240);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<string | null>(null);
   const [tags, setTags] = useState<string[]>([]);
@@ -116,7 +120,19 @@ export default function Compose() {
       </Row>
       <ScrollView contentContainerStyle={{ padding: 16, gap: 14 }} keyboardShouldPersistTaps="handled">
         <TextInput value={title} onChangeText={setTitle} placeholder="Title (optional)" placeholderTextColor={t.muted} style={[input, { fontSize: 18, fontWeight: '700' }]} />
-        <TextInput value={body} onChangeText={setBody} placeholder="What's happening?" placeholderTextColor={t.muted} multiline autoFocus={!id} style={[input, { minHeight: 120, textAlignVertical: 'top' }]} />
+        {(!id || editing.data) && (
+          <RichEditor
+            key={id ?? 'new'}
+            initial={id ? (editing.data?.body ?? '') : ''}
+            placeholder="What's happening?"
+            colors={{ card: t.card, text: t.text, muted: t.muted, line: t.line, accent: t.accent, accentText: t.accentText, raised: t.raised }}
+            fontSize={16 + textDelta}
+            autoFocus={!id}
+            onChange={async (md) => setBody(md)}
+            onHeight={async (h) => setEditorHeight(h)}
+            dom={{ style: { width: '100%', height: Math.max(editorHeight, 120) }, scrollEnabled: false, keyboardDisplayRequiresUserAction: false }}
+          />
+        )}
 
         {(existing.length > 0 || ups.length > 0) && (
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>

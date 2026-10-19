@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import webpush from 'web-push';
 import { sql } from '../db.ts';
 import { config } from '../config.ts';
+import { stripMarkdown } from './markdown.ts';
 
 export type NotificationType = 'agent_post' | 'reminder' | 'comment' | 'share';
 
@@ -62,6 +63,7 @@ interface NotifyInput {
 
 /** Store an in-app notification (bell badge) and push it to the user's devices. */
 export async function notify(n: NotifyInput) {
+  if (n.body) n = { ...n, body: stripMarkdown(n.body) };
   const [row] = await sql`
     INSERT INTO notifications (user_id, type, title, body, post_id, actor_id)
     VALUES (${n.userId}, ${n.type}, ${n.title.slice(0, 200)}, ${(n.body ?? '').slice(0, 500)}, ${n.postId ?? null}, ${n.actorId ?? null})

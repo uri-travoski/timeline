@@ -10,6 +10,8 @@ import { SOURCE_LABEL, bytes, duration, fullDate, queueMarkRead, setReadInCache,
 import { AgentBadge, Avatar, Menu, MenuItem, Modal, Spinner, toast, toastError } from './ui';
 import { Video } from './Video';
 import { useComposer } from './Composer';
+import { MarkdownBody } from './MarkdownBody';
+import { stripMarkdown } from '../lib/markdown';
 
 function linkify(text: string): ReactNode[] {
   const parts = text.split(/(https?:\/\/[^\s<]+[^\s<.,;:!?)\]'"])/g);
@@ -305,7 +307,7 @@ function Revisions({ postId, onClose }: { postId: string; onClose: () => void })
                 Before edit by {r.editedBy ?? 'someone'} · {fullDate(r.editedAt)}
               </div>
               {r.title && <div className="font-semibold">{r.title}</div>}
-              <div className="prose-post text-sm">{r.body}</div>
+              <MarkdownBody source={r.body} className="text-sm" />
               {r.tags.length > 0 && <div className="mt-1 text-xs text-accent-text">{r.tags.map((t: string) => `#${t}`).join(' ')}</div>}
             </div>
           ))}
@@ -329,7 +331,7 @@ export function ReminderCard({ post }: { post: Post }) {
       </div>
       <div className="min-w-0 flex-1 basis-48">
         <div className="font-semibold">{post.title}</div>
-        {post.body && <div className="text-sm text-muted">{post.body}</div>}
+        {post.body && <div className="text-sm text-muted">{stripMarkdown(post.body)}</div>}
         <div className="text-xs text-gold">
           Reminder{post.author?.kind === 'agent' ? ` · set by ${post.author.name}` : ''} · {timeAgo(post.postedAt)}
           {post.refPost && (
@@ -440,7 +442,7 @@ export const PostCard = memo(function PostCard({ post, expanded }: { post: Post;
           {post.title}
         </Link>
       )}
-      {post.body && <div className={`prose-post mt-2 text-[15.5px] ${expanded ? '' : 'line-clamp-[12]'}`}>{linkify(post.body)}</div>}
+      {post.body && <MarkdownBody source={post.body} className="mt-2 text-[15.5px]" clamp={!expanded} />}
       {post.sourceMeta?.importError && (
         <div className="mt-2 rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">Could not download the media: {String(post.sourceMeta.importError).slice(0, 160)}</div>
       )}

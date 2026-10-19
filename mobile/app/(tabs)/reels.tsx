@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { Text } from '../../src/text';
+import { stripMarkdown } from '../../src/components/Markdown';
 
 
 import { router, useIsFocused, useLocalSearchParams } from 'expo-router';
@@ -206,7 +207,7 @@ const Slide = memo(function Slide({ item, height, mode, playing, muted, topInset
         {!!(post.title || post.body) && (
           <Text style={styles.body} numberOfLines={expanded ? 12 : 2} onPress={() => setExpanded(!expanded)}>
             {post.title ? <Text style={{ fontWeight: '700' }}>{post.title} </Text> : null}
-            {post.body}
+            {stripMarkdown(post.body)}
           </Text>
         )}
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 8, marginTop: 6 }}>

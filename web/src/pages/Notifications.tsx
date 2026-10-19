@@ -1,3 +1,4 @@
+import { stripMarkdown } from '../lib/markdown';
 import { useNavigate } from 'react-router';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AlarmClock, Bell, CheckCheck, MessageCircle, Users } from 'lucide-react';
@@ -73,7 +74,7 @@ export default function Notifications() {
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="font-semibold">{n.title}</div>
-                  {n.body && <div className="line-clamp-2 text-sm text-muted">{n.body}</div>}
+                  {n.body && <div className="line-clamp-2 text-sm text-muted">{stripMarkdown(n.body)}</div>}
                   <div className="mt-1 text-xs text-muted">{timeAgo(n.createdAt)}</div>
                 </div>
                 {!n.readAt && <span className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-gold" />}

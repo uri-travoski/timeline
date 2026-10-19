@@ -1,3 +1,4 @@
+import { stripMarkdown } from '../lib/markdown';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { File, MessageCircle, RotateCcw, Trash2 } from 'lucide-react';
@@ -83,7 +84,7 @@ export default function Trash() {
         <div className="flex flex-col gap-2">
           {tab === 'post' &&
             d!.posts.map((p) => (
-              <Row key={p.id} type="post" id={p.id} title={p.title || p.body}
+              <Row key={p.id} type="post" id={p.id} title={p.title || stripMarkdown(p.body)}
                 sub={`by ${p.author?.name ?? '?'} · deleted ${timeAgo(p.deletedAt!)} · ${p.attachments.length} file(s)`}
                 icon={p.attachments[0]?.thumbUrl ? <img src={p.attachments[0].thumbUrl} className="h-12 w-12 rounded-lg object-cover" alt="" /> : undefined} />
             ))}

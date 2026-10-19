@@ -5,6 +5,7 @@ import { readableTimelines, type AuthUser } from '../lib/auth.ts';
 import { badRequest, conflict, forbidden, notFound } from '../lib/errors.ts';
 import { notify } from '../lib/notify.ts';
 import { enqueue } from '../lib/jobs.ts';
+import { stripMarkdown } from '../lib/markdown.ts';
 import { serializeAttachment } from './attachments.ts';
 
 export const FILE_KINDS = ['image', 'video', 'audio', 'pdf', 'document', 'archive', 'other'] as const;
@@ -242,7 +243,7 @@ export async function serializePosts(user: AuthUser, rows: any[]) {
       isRead: readSet.has(p.id),
       commentCount: countBy.get(p.id) ?? 0,
       attachments: (attsBy.get(p.id) ?? []).map(serializeAttachment),
-      refPost: ref && !ref.deleted_at ? { id: ref.id, title: ref.title, snippet: ref.body } : null,
+      refPost: ref && !ref.deleted_at ? { id: ref.id, title: ref.title, snippet: stripMarkdown(ref.body) } : null,
       permissions: {
         canEdit: mine && user.scopes.includes('write'),
         canDelete: mine && user.scopes.includes('delete'),

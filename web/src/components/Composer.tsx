@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { RichEditor } from './RichEditor';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { CalendarClock, Cloud, Film, HardDrive, ImagePlus, Paperclip, Type, X } from 'lucide-react';
 import { api, uploadFile, type Attachment, type Post } from '../lib/api';
@@ -165,14 +166,13 @@ function Composer({ post, onClose }: { post?: Post; onClose: () => void }) {
         }}
       >
         {showTitle && <input className="field text-lg font-semibold" placeholder="Title (optional)" value={title} onChange={(e) => setTitle(e.target.value)} />}
-        <textarea
-          className="field min-h-36 resize-y"
-          placeholder="What's happening? (drop files here)"
+        <RichEditor
           value={body}
+          onChange={setBody}
+          placeholder="What's happening? (drop files here)"
           autoFocus
-          onChange={(e) => setBody(e.target.value)}
-          onPaste={(e) => e.clipboardData.files.length && addFiles(e.clipboardData.files)}
-          onKeyDown={(e) => (e.metaKey || e.ctrlKey) && e.key === 'Enter' && canSave && save()}
+          onPasteFiles={addFiles}
+          onSubmit={() => canSave && save()}
         />
 
         {(existing.length > 0 || uploads.length > 0) && (

@@ -26,7 +26,7 @@ function slim(p: any) {
 }
 
 function buildServer(user: AuthUser) {
-  const server = new McpServer({ name: 'timeline', version: '1.3.5' }, {
+  const server = new McpServer({ name: 'timeline', version: '1.3.6' }, {
     instructions:
       `You are connected to the Timeline of ${user.kind === 'agent' ? 'your owner' : user.name}. ` +
       'Posts you create appear on that timeline with your name and an "AI agent" badge, and notify the owner. ' +
@@ -65,7 +65,7 @@ function buildServer(user: AuthUser) {
     {
       description: 'Create a text post (attach files with import_url_post or the REST upload API)',
       inputSchema: {
-        body: z.string().describe('Post text, Markdown allowed'),
+        body: z.string().describe('Post text in Markdown: # headings, **bold**, *italic*, ++underline++, ==highlight==, - bullets, 1. numbered, - [ ] checklists, [links](https://...). Single line breaks are kept.'),
         title: z.string().optional(),
         category: z.string().optional().describe('Category name, see list_categories'),
         tags: z.array(z.string()).optional(),

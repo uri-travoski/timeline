@@ -8,6 +8,7 @@ import { timeAgo } from '../src/state';
 import { GOLD, GOLD_TINT, useTheme } from '../src/theme';
 import { Screen } from '../src/components/Screen';
 import { Avatar, Chip, Empty, Loading, Row, T } from '../src/components/ui';
+import { stripMarkdown } from '../src/components/Markdown';
 
 export default function Notifications() {
   const t = useTheme();
@@ -54,7 +55,7 @@ export default function Notifications() {
               )}
               <View style={{ flex: 1 }}>
                 <T bold size={14.5}>{n.title}</T>
-                {!!n.body && <T muted size={13} numberOfLines={2}>{n.body}</T>}
+                {!!n.body && <T muted size={13} numberOfLines={2}>{stripMarkdown(n.body)}</T>}
                 <T muted size={11.5} style={{ marginTop: 3 }}>{timeAgo(n.createdAt)}</T>
               </View>
               {!n.readAt && <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: GOLD, marginTop: 6 }} />}

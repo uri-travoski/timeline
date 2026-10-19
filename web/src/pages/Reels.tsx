@@ -1,3 +1,4 @@
+import { stripMarkdown } from '../lib/markdown';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -306,7 +307,7 @@ function ReelSlide({ item, index, preload, active, muted, autoRead, onRead, onUn
             {(post.title || post.body) && (
               <button className={`mt-1.5 block text-left text-sm leading-snug opacity-95 ${expanded ? '' : 'line-clamp-2'}`} onClick={() => setExpanded((e) => !e)}>
                 {post.title && <b>{post.title} </b>}
-                {post.body}
+                {stripMarkdown(post.body)}
               </button>
             )}
             <div className="mt-2 flex flex-wrap items-center gap-2 text-xs opacity-85">
